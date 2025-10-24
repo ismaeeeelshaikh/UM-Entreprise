@@ -1,27 +1,11 @@
 import { NextResponse } from 'next/server';
-import { fetchProductsFromDB } from '@/lib/db.js'; 
+import connectDB from '@/lib/db';
+import Order from '@/lib/models/Order';
+// Yahan koi fetchProductsFromDB import NAHI hona chahiye!
 
-export const dynamic = 'force-dynamic';
-
-export async function GET() {
-  try {
-    // This function inside lib/db.js handles the model loading and the .lean() query
-    const products = await fetchProductsFromDB(); 
-
-    // Serialization is kept as a final safety measure
-    const serializedProducts = JSON.parse(JSON.stringify(products));
-
-    return NextResponse.json({ 
-      success: true, 
-      products: serializedProducts 
-    }, { status: 200 });
-
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    return NextResponse.json({ 
-      success: false, 
-      message: 'Failed to fetch products.', 
-      error: error.message 
-    }, { status: 500 });
-  }
+export async function GET(request) {
+  await connectDB();
+  const orders = await Order.find({});
+  const plainOrders = JSON.parse(JSON.stringify(orders));
+  return NextResponse.json({ orders: plainOrders });
 }
