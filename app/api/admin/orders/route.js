@@ -1,27 +1,26 @@
-// app/api/admin/orders/route.js
-
 import { NextResponse } from 'next/server';
-import { fetchOrdersFromDB } from '@/lib/db.js'; 
+import { fetchProductsFromDB } from '@/lib/db.js'; 
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const orders = await fetchOrdersFromDB(); 
+    // This function inside lib/db.js handles the model loading and the .lean() query
+    const products = await fetchProductsFromDB(); 
 
-    // ✅ Serialization kept for absolute safety, though .lean() helps immensely
-    const serializedOrders = JSON.parse(JSON.stringify(orders));
+    // Serialization is kept as a final safety measure
+    const serializedProducts = JSON.parse(JSON.stringify(products));
 
     return NextResponse.json({ 
       success: true, 
-      orders: serializedOrders 
+      products: serializedProducts 
     }, { status: 200 });
 
   } catch (error) {
-    console.error("Error fetching orders:", error);
+    console.error("Error fetching products:", error);
     return NextResponse.json({ 
       success: false, 
-      message: 'Failed to fetch orders.', 
+      message: 'Failed to fetch products.', 
       error: error.message 
     }, { status: 500 });
   }
