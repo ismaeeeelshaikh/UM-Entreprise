@@ -1,7 +1,6 @@
 // app/api/admin/orders/route.js
 
 import { NextResponse } from 'next/server';
-// ✅ FIX: Import the functions that are now correctly exported from db.js
 import { fetchOrdersFromDB } from '@/lib/db.js'; 
 
 export const dynamic = 'force-dynamic';
@@ -10,7 +9,7 @@ export async function GET() {
   try {
     const orders = await fetchOrdersFromDB(); 
 
-    // ✅ FIX: Serialize the complex Mongoose objects into plain, safe JSON
+    // ✅ Serialization kept for absolute safety, though .lean() helps immensely
     const serializedOrders = JSON.parse(JSON.stringify(orders));
 
     return NextResponse.json({ 
