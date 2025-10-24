@@ -28,33 +28,30 @@ export default function AdminOrdersPage() {
         <div className="space-y-6">
           {orders.map((order) => (
             <div key={order._id} className="card shadow border p-6">
-              <div className="flex justify-between mb-2">
-                <div>
-                  <span className="font-mono text-xs text-gray-500">Order ID: {order._id}</span>
-                  <span className="ml-4 text-sm">
-                    <b>Status:</b> <span className={`${order.status === 'cancelled' ? 'text-red-600' :
-                      order.status === 'delivered' ? 'text-green-600' : 'text-blue-600'}`}>{order.status}</span>
-                  </span>
-                  {order.cancelReason && (
-                    <span className="ml-6 text-xs text-red-500">Reason: {order.cancelReason}</span>
-                  )}
-                </div>
-                <div><b>Amount:</b> ₹{order.amount}</div>
+              <div className="flex justify-between mb-1">
+                <span className="font-mono text-xs text-gray-500">Order ID: {order._id}</span>
+                <span className={`${order.status === 'cancelled' ? 'text-red-600' :
+                                order.status === 'delivered' ? 'text-green-600' : 'text-blue-600'}`}>{order.status}</span>
               </div>
-              <div className="text-sm mb-1"><b>User ID:</b> {order.user}</div>
-              <div className="text-sm mb-1"><b>Address:</b> {order.address}</div>
+              <div className="mb-1"><b>Amount:</b> ₹{order.amount}</div>
+              <div className="mb-1 text-sm"><b>User ID:</b> {order.user}</div>
+              <div className="mb-1 text-sm"><b>Address:</b> {order.address}</div>
               <div className="mb-2 font-semibold">Items:</div>
               <ul>
                 {order.items.map((item, idx) => (
                   <li key={idx} className="mb-1">
                     {item.image && (
-                      <img src={item.image} alt={item.name} width={40} height={40} style={{display:'inline-block',marginRight:8,borderRadius:4,verticalAlign:'middle'}} />
+                      <img src={item.image} alt={item.name} width={40} height={40}
+                        style={{ display: 'inline-block', marginRight: 8, borderRadius: 4, verticalAlign: 'middle' }} />
                     )}
                     <b>{item.name}</b> (x{item.quantity}) - ₹{item.price}
                   </li>
                 ))}
               </ul>
-              <div className="text-xs text-gray-500">Placed: {new Date(order.createdAt).toLocaleString()}</div>
+              {order.cancelReason && (
+                <div className="text-xs text-red-500">Cancel Reason: {order.cancelReason}</div>
+              )}
+              <div className="text-xs text-gray-500 mt-1">Placed: {new Date(order.createdAt).toLocaleString()}</div>
             </div>
           ))}
         </div>

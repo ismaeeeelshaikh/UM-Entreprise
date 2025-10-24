@@ -35,7 +35,7 @@ export default function AdminProductsPage() {
                   width={80}
                   height={80}
                   className="mb-2 rounded"
-                  style={{objectFit:'cover'}}
+                  style={{ objectFit: 'cover' }}
                 />
               )}
               <div className="font-semibold text-lg">{prod.name}</div>
