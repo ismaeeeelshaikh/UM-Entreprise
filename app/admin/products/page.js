@@ -1,7 +1,6 @@
 'use client';
-export const dynamic = 'force-dynamic';
-
 import { useEffect, useState } from "react";
+export const dynamic = 'force-dynamic';
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState([]);
