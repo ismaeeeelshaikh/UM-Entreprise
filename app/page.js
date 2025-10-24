@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import connectDB from '@/lib/db';
-// ❌ Removed the static import: import Product from '@/lib/models/Product';
+// 🛑 FINAL FIX: Change to dynamic require() with direct relative path
+const Product = require('../../../lib/models/Product'); 
 import ProductCard from '@/components/ProductCard';
 
 export const revalidate = 3600;
@@ -9,11 +10,6 @@ export const revalidate = 3600;
 async function getFeaturedProducts() {
   try {
     await connectDB();
-    
-    // ✅ FIX: Use require() inside the function to load the model lazily at runtime.
-    // This stops Next.js from serialiazing the Mongoose model class during the build.
-    const Product = require('@/lib/models/Product');
-
     const products = await Product.find({ featured: true, active: true })
       .limit(8)
       .lean();
