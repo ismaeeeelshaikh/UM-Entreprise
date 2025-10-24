@@ -1,8 +1,13 @@
+// app/api/login/route.js
+
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import connectDB from '@/lib/db';
-import User from '@/lib/models/User';
+
+// 🛑 FINAL FIX: Use require() to load the Mongoose model dynamically.
+// This prevents Next.js from crashing the build during static analysis.
+const User = require('@/lib/models/User'); 
 
 export async function POST(request) {
   try {
@@ -33,14 +38,17 @@ export async function POST(request) {
       { expiresIn: '7d' }
     );
 
+    // Filter sensitive fields for the response payload
+    const responseUser = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    };
+
     const response = NextResponse.json({
       success: true,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
+      user: responseUser,
     });
 
     response.cookies.set('token', token, {
