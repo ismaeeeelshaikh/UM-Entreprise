@@ -1,5 +1,6 @@
 'use client';
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
+
 export const dynamic = 'force-dynamic';
 
 export default function AdminOrdersPage() {
@@ -31,10 +32,10 @@ export default function AdminOrdersPage() {
                 <span className="font-mono text-xs text-gray-500">Order ID: {order._id}</span>
                 <span className={
                   order.status === 'cancelled'
-                      ? 'text-red-600'
-                      : order.status === 'delivered'
-                      ? 'text-green-600'
-                      : 'text-blue-600'
+                    ? 'text-red-600'
+                    : order.status === 'delivered'
+                    ? 'text-green-600'
+                    : 'text-blue-600'
                 }>{order.status}</span>
               </div>
               <div className="mb-1"><b>Amount:</b> ₹{order.amount}</div>

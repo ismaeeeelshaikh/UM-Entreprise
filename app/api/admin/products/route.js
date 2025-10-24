@@ -2,9 +2,8 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import Product from '@/lib/models/Product';
 
-export async function GET(request) {
+export async function GET() {
   await connectDB();
   const products = await Product.find({});
-  const plainProducts = JSON.parse(JSON.stringify(products));
-  return NextResponse.json({ products: plainProducts });
+  return NextResponse.json({ products: JSON.parse(JSON.stringify(products)) });
 }
