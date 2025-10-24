@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import connectDB from '@/lib/db';
 // 🛑 FINAL FIX: Change to dynamic require() with direct relative path
-const Product = require('../../../lib/models/Product'); 
+const Product = require('../lib/models/Product.js');
 import ProductCard from '@/components/ProductCard';
 
 export const revalidate = 3600;
