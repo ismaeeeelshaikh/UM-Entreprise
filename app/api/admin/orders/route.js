@@ -4,8 +4,9 @@ import Order from '@/lib/models/Order';
 
 export async function GET(request) {
   await connectDB();
-  const orders = await Order.find({}); // ya as-required
-  // Yeh line likhni hi hai!
-  const safeOrders = JSON.parse(JSON.stringify(orders));
-  return NextResponse.json({ orders: safeOrders });
+  const orders = await Order.find({});
+
+  // Is line ko likhna ZARURI hai:
+  const plainOrders = JSON.parse(JSON.stringify(orders));
+  return NextResponse.json({ orders: plainOrders });
 }
