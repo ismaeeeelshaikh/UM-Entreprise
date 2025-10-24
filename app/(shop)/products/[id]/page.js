@@ -1,21 +1,29 @@
-import { notFound } from 'next/navigation';
+'use client';   // 👈 If you want strict client, else SSR me fetch ka use!
+import { useEffect, useState } from "react";
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import connectDB from '@/lib/db';
-import Product from '@/lib/models/Product';
 import CustomizationForm from '@/components/CustomizationForm';
 
-async function getProduct(id) {
-  await connectDB();
-  const product = await Product.findById(id).lean();
-  return product ? JSON.parse(JSON.stringify(product)) : null;
-}
+export default function ProductDetailPage({ params }) {
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
-export default async function ProductDetailPage({ params }) {
-  const product = await getProduct(params.id);
+  useEffect(() => {
+    fetch(`/api/products/${params.id}`)
+      .then(res => res.json())
+      .then(data => {
+        setProduct(data.product);
+        setLoading(false);
+        if (!data.product) {
+          router.replace('/404');
+        }
+      })
+      .catch(() => setLoading(false));
+  }, [params.id, router]);
 
-  if (!product) {
-    notFound();
-  }
+  if (loading) return <div>Loading...</div>;
+  if (!product) return <div>Product not found</div>;
 
   const imageUrl = product.images?.[0]?.url || '/images/placeholder.jpg';
 
@@ -32,16 +40,13 @@ export default async function ProductDetailPage({ params }) {
             priority
           />
         </div>
-
         {/* Details */}
         <div>
           <h1 className="text-4xl font-bold mb-4">{product.name}</h1>
           <p className="text-3xl font-bold text-primary-600 mb-6">
-            ₹{product.basePrice.toLocaleString('en-IN')}
+            ₹{product.basePrice?.toLocaleString('en-IN') || product.price}
           </p>
-          
           <p className="text-gray-700 mb-6 leading-relaxed">{product.description}</p>
-
           <div className="mb-6">
             <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
               product.stock > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -49,7 +54,6 @@ export default async function ProductDetailPage({ params }) {
               {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
             </span>
           </div>
-
           {/* Customization Form */}
           <CustomizationForm product={product} />
         </div>
