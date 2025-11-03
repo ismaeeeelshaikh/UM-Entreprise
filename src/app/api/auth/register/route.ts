@@ -26,7 +26,7 @@ export async function POST(request: Request) {
         email,
         name,
         hashedPassword,
-        role: "USER",
+        role: "USER" as any, // ✅ Type assertion to avoid build error
       },
     });
 

@@ -5,18 +5,18 @@ declare module "next-auth" {
   interface Session {
     user: {
       id: string;
-      role: UserRole;
+      role: UserRole; // ✅ Use UserRole enum type
     } & DefaultSession["user"];
   }
 
   interface User {
-    role: UserRole;
+    role: UserRole; // ✅ Use UserRole enum type
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
-    role: UserRole;
+    role: UserRole; // ✅ Use UserRole enum type
     id: string;
   }
 }

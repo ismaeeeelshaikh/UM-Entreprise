@@ -4,6 +4,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
+import { UserRole } from "@prisma/client"; // ✅ Import UserRole enum
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -56,7 +57,8 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.role = token.role as string;
+        // ✅ Cast to UserRole enum type
+        session.user.role = token.role as UserRole;
         session.user.id = token.id as string;
       }
       return session;

@@ -29,6 +29,7 @@ import ImageUpload from "@/components/ImageUpload";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+// ✅ Updated schema - removed .default() from isCustomizable
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().min(1, "Description is required"),
@@ -36,7 +37,7 @@ const formSchema = z.object({
   images: z.array(z.string()).min(1, "At least one image is required"),
   category: z.string().min(1, "Category is required"),
   stock: z.string().min(1, "Stock is required"),
-  isCustomizable: z.boolean().default(false),
+  isCustomizable: z.boolean(), // ✅ Removed .default(false)
   customizationLabel: z.string().optional(),
 });
 
@@ -68,6 +69,7 @@ export default function ProductForm({
           ...initialData,
           price: String(initialData.price),
           stock: String(initialData.stock),
+          isCustomizable: initialData.isCustomizable ?? false, // ✅ Explicit default
         }
       : {
           name: "",
@@ -76,7 +78,7 @@ export default function ProductForm({
           images: [],
           category: "",
           stock: "",
-          isCustomizable: false,
+          isCustomizable: false, // ✅ Explicit default value
           customizationLabel: "",
         },
   });
