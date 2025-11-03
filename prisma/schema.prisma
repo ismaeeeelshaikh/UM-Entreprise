@@ -14,16 +14,24 @@ datasource db {
 // AUTHENTICATION MODELS
 // ------------------------------
 
+enum UserRole {
+  USER
+  ADMIN
+}
+
 model User {
-  id            String    @id @default(auto()) @map("_id") @db.ObjectId
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  hashedPassword String? // For email/password login
-  accounts      Account[]
-  sessions      Session[]
-  orders        Order[]   // A user can have many orders
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  name           String?
+  email          String?   @unique
+  emailVerified  DateTime?
+  image          String?
+  hashedPassword String?
+  role           UserRole  @default(USER)
+  accounts       Account[]
+  sessions       Session[]
+  orders         Order[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 }
 
 model Account {
@@ -127,3 +135,5 @@ model OrderItem {
   // Stored Customization
   customizationText String? // e.g., "Ismaeel"
 }
+
+
