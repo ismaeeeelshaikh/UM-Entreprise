@@ -70,6 +70,7 @@ export default function ProductForm({
           price: String(initialData.price),
           stock: String(initialData.stock),
           isCustomizable: initialData.isCustomizable ?? false, // ✅ Explicit default
+          customizationLabel: initialData.customizationLabel ?? "", 
         }
       : {
           name: "",
