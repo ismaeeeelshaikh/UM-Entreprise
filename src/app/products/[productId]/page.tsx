@@ -1,31 +1,89 @@
-import { notFound } from "next/navigation";
+"use client";
+
+import { useEffect, useState } from "react";
+import { notFound, useParams } from "next/navigation";
 import Image from "next/image";
-import prisma from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useCart } from "@/store/useCart";
+import { useToast } from "@/components/ui/use-toast";
 
-async function getProduct(productId: string) {
-  const product = await prisma.product.findUnique({
-    where: { id: productId },
-  });
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  images: string[];
+  category: string;
+  stock: number;
+  isCustomizable: boolean;
+  customizationLabel: string | null;
+}
+
+export default function ProductDetailPage() {
+  const params = useParams();
+  const productId = params.productId as string;
+  
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [customization, setCustomization] = useState("");
+  const [quantity, setQuantity] = useState(1);
+  
+  const addItem = useCart((state) => state.addItem);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    async function fetchProduct() {
+      try {
+        const response = await fetch(`/api/products/${productId}`);
+        if (!response.ok) {
+          notFound();
+        }
+        const data = await response.json();
+        setProduct(data);
+      } catch (error) {
+        notFound();
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchProduct();
+  }, [productId]);
+
+  const handleAddToCart = () => {
+    if (!product) return;
+
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.images[0],
+      quantity,
+      customization: product.isCustomizable ? customization : undefined,
+    });
+
+    toast({
+      title: "Added to cart",
+      description: `${product.name} has been added to your cart`,
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="container flex min-h-screen items-center justify-center py-10">
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
   if (!product) {
     notFound();
   }
-
-  return product;
-}
-
-export default async function ProductDetailPage({
-  params,
-}: {
-  params: Promise<{ productId: string }>; // ✅ Changed to Promise
-}) {
-  // ✅ Await params first
-  const { productId } = await params;
-  const product = await getProduct(productId);
 
   return (
     <div className="container py-10">
@@ -82,22 +140,51 @@ export default async function ProductDetailPage({
           {product.isCustomizable && (
             <Card>
               <CardContent className="p-4">
-                <div className="flex items-center gap-2">
-                  <Badge>Customizable</Badge>
-                  <span className="text-sm text-muted-foreground">
-                    {product.customizationLabel || "Add your personal touch"}
-                  </span>
-                </div>
+                <Label htmlFor="customization">
+                  {product.customizationLabel || "Add your personal touch"}
+                </Label>
+                <Input
+                  id="customization"
+                  value={customization}
+                  onChange={(e) => setCustomization(e.target.value)}
+                  placeholder="Enter text for customization"
+                  className="mt-2"
+                />
               </CardContent>
             </Card>
           )}
 
           <div className="space-y-2">
+            <Label htmlFor="quantity">Quantity</Label>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                disabled={quantity <= 1}
+              >
+                -
+              </Button>
+              <Input
+                id="quantity"
+                type="number"
+                value={quantity}
+                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                className="w-20 text-center"
+                min="1"
+                max={product.stock}
+              />
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                disabled={quantity >= product.stock}
+              >
+                +
+              </Button>
+            </div>
             <p className="text-sm text-muted-foreground">
-              Stock:{" "}
-              {product.stock > 0
-                ? `${product.stock} available`
-                : "Out of stock"}
+              Stock: {product.stock > 0 ? `${product.stock} available` : "Out of stock"}
             </p>
           </div>
 
@@ -106,6 +193,7 @@ export default async function ProductDetailPage({
               size="lg"
               className="flex-1"
               disabled={product.stock === 0}
+              onClick={handleAddToCart}
             >
               Add to Cart
             </Button>

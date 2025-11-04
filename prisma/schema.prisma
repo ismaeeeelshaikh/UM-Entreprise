@@ -110,16 +110,20 @@ enum OrderStatus {
 }
 
 model Order {
-  id        String      @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String      @db.ObjectId
-  user      User        @relation(fields: [userId], references: [id])
-  total     Float
-  status    OrderStatus @default(PENDING)
-  address   Json        // Store shipping address as a JSON object
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id               String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String      @db.ObjectId
+  user             User        @relation(fields: [userId], references: [id])
+  totalAmount      Float
+  status           OrderStatus @default(PENDING)
+  paymentMethod    String      @default("RAZORPAY") // ✅ NEW: "RAZORPAY" or "COD"
+  paymentId        String?
+  paymentStatus    String?
+  shippingAddress  String
+  items            OrderItem[]
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
 
-  items OrderItem[] // An order has many items
+  @@map("orders")
 }
 
 model OrderItem {
