@@ -27,12 +27,13 @@ interface Product {
 export default function ProductDetailPage() {
   const params = useParams();
   const productId = params.productId as string;
-  
+
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [customization, setCustomization] = useState("");
   const [quantity, setQuantity] = useState(1);
-  
+  const [selectedImage, setSelectedImage] = useState<string>(""); // ✅ State for selected image
+
   const addItem = useCart((state) => state.addItem);
   const { toast } = useToast();
 
@@ -45,6 +46,9 @@ export default function ProductDetailPage() {
         }
         const data = await response.json();
         setProduct(data);
+        if (data.images && data.images.length > 0) {
+          setSelectedImage(data.images[0]); // ✅ Set initial image
+        }
       } catch (error) {
         notFound();
       } finally {
@@ -90,25 +94,27 @@ export default function ProductDetailPage() {
       <div className="grid gap-8 md:grid-cols-2">
         {/* Images */}
         <div className="space-y-4">
-          <div className="relative aspect-square overflow-hidden rounded-lg">
+          <div className="relative aspect-square overflow-hidden rounded-lg border bg-muted">
             <Image
-              src={product.images[0] || "/placeholder.png"}
+              src={selectedImage || product.images[0] || "/placeholder.png"} // ✅ Use selectedImage
               alt={product.name}
               fill
               className="object-cover"
               priority
             />
           </div>
-          {product.images.length > 1 && (
+          {product.images.length > 0 && (
             <div className="grid grid-cols-4 gap-4">
-              {product.images.slice(1, 5).map((image, index) => (
+              {product.images.map((image, index) => (
                 <div
                   key={index}
-                  className="relative aspect-square overflow-hidden rounded-lg"
+                  className={`relative aspect-square cursor-pointer overflow-hidden rounded-lg border-2 transition-all ${selectedImage === image ? "border-primary" : "border-transparent hover:border-muted-foreground"
+                    }`} // ✅ Add clickable interaction and active state
+                  onClick={() => setSelectedImage(image)}
                 >
                   <Image
                     src={image}
-                    alt={`${product.name} ${index + 2}`}
+                    alt={`${product.name} ${index + 1}`}
                     fill
                     className="object-cover"
                   />
@@ -134,7 +140,7 @@ export default function ProductDetailPage() {
 
           <div>
             <h2 className="mb-2 font-semibold">Description</h2>
-            <p className="text-muted-foreground">{product.description}</p>
+            <p className="text-muted-foreground whitespace-pre-wrap">{product.description}</p>
           </div>
 
           {product.isCustomizable && (

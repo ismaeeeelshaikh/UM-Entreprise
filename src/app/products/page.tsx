@@ -9,11 +9,18 @@ import {
 } from "@/components/ui/select";
 import { Prisma } from "@prisma/client";
 
-async function getProducts(category?: string) {
+async function getProducts(category?: string, search?: string) {
   const whereClause: Prisma.ProductWhereInput = {};
 
   if (category && category !== "ALL") {
     whereClause.category = category as any;
+  }
+
+  if (search) {
+    whereClause.OR = [
+      { name: { contains: search, mode: "insensitive" } },
+      { description: { contains: search, mode: "insensitive" } },
+    ];
   }
 
   const products = await prisma.product.findMany({
@@ -29,11 +36,11 @@ async function getProducts(category?: string) {
 export default async function ProductsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string }>; // ✅ Changed to Promise
+  searchParams: Promise<{ category?: string; search?: string }>;
 }) {
   // ✅ Await searchParams first
-  const { category } = await searchParams;
-  const products = await getProducts(category);
+  const { category, search } = await searchParams;
+  const products = await getProducts(category, search);
 
   return (
     <div className="container py-10">

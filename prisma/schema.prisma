@@ -70,6 +70,45 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+enum OtpType {
+  REGISTER
+  RESET
+}
+
+model Otp {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String
+  code      String
+  type      OtpType  @default(REGISTER)
+  expires   DateTime
+  createdAt DateTime @default(now())
+}
+
+// ------------------------------
+// CORPORATE INQUIRY MODELS
+// ------------------------------
+
+enum InquiryStatus {
+  NEW
+  CONTACTED
+  CLOSED
+}
+
+model CorporateInquiry {
+  id        String        @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  company   String
+  email     String
+  product   String
+  quantity  String
+  message   String?
+  status    InquiryStatus @default(NEW)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@map("corporate_inquiries")
+}
+
 // ------------------------------
 // E-COMMERCE MODELS
 // ------------------------------

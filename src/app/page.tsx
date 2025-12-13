@@ -1,32 +1,83 @@
+import prisma from "@/lib/prisma";
+import ProductCard from "@/components/ProductCard";
+import Hero from "@/components/Hero";
+import Features from "@/components/Features";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 
-export default function HomePage() {
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const featuredProducts = await prisma.product.findMany({
+    take: 4,
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
   return (
-    <section className="container grid items-center gap-6 pb-8 pt-6 md:py-10">
-      <div className="mx-auto flex max-w-[980px] flex-col items-center gap-2 py-8 md:py-12 md:pb-8 lg:py-24 lg:pb-20">
-        <h1 className="text-center text-3xl font-extrabold leading-tight tracking-tighter sm:text-3xl md:text-5xl lg:text-6xl">
-          Personalized Gifts
-          <br className="hidden sm:inline" />
-          That Define You.
-        </h1>
-        <p className="mx-auto max-w-[700px] text-center text-lg text-muted-foreground sm:text-xl">
-          Welcome to <span className="font-semibold">UM Entreprise</span>. 
-          Discover our exclusive collection of custom wallets, pens, keychains, and more. 
-          Crafted just for you.
-        </p>
+    <div className="flex flex-col min-h-screen">
+      <Hero />
 
-        <div className="flex w-full items-center justify-center space-x-4 py-4 md:pb-10">
-          <Button asChild size="lg">
-            <Link href="/products">Shop Now</Link>
-          </Button>
-          <Button asChild variant="outline" size="lg">
-            <Link href="/customize">Create Your Own</Link>
+      <Features />
+
+      <section className="py-20 container px-4 md:px-6">
+        <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-4">
+          <div className="text-center md:text-left">
+            <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">
+              Featured Collection
+            </h2>
+            <p className="mt-2 text-muted-foreground text-lg">
+              Our most popular picks this season.
+            </p>
+          </div>
+          <Button asChild variant="ghost" className="hidden md:inline-flex">
+            <Link href="/products" className="group">
+              View All Products
+              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Link>
           </Button>
         </div>
-      </div>
 
-      {/* You can add "Featured Products" section here later */}
-    </section>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {featuredProducts.map((product: any) => (
+            <ProductCard
+              key={product.id}
+              id={product.id}
+              name={product.name}
+              description={product.description}
+              price={product.price}
+              images={product.images}
+              category={product.category}
+              isCustomizable={product.isCustomizable}
+            />
+          ))}
+        </div>
+
+        <div className="mt-12 text-center md:hidden">
+          <Button asChild variant="outline" className="w-full">
+            <Link href="/products">View All Products</Link>
+          </Button>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="bg-slate-100 py-20 text-center text-slate-900 border-t border-slate-200">
+        <div className="container mx-auto px-4 md:px-6 text-center">
+          <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">
+            Ready to Create Something Special?
+          </h2>
+          <p className="mx-auto mt-4 max-w-[600px] text-slate-900/90 text-lg">
+            Join thousands of happy customers who have found the perfect personalized gift.
+          </p>
+          <div className="mt-8 flex justify-center gap-4">
+            <Button asChild size="lg" className="font-semibold">
+              <Link href="/products">Start Shopping</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+    </div>
   );
 }

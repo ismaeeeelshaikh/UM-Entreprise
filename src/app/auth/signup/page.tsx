@@ -32,8 +32,14 @@ const formSchema = z
   .object({
     name: z.string().min(2, "Name must be at least 2 characters"),
     email: z.string().email("Invalid email address"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    password: z
+      .string()
+      .min(6, "Password must be at least 6 characters")
+      .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+      .regex(/[0-9]/, "Password must contain at least one number")
+      .regex(/[^a-zA-Z0-9]/, "Password must contain at least one special character"),
     confirmPassword: z.string(),
+    otp: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -45,6 +51,7 @@ function SignUpForm() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [step, setStep] = useState<"DETAILS" | "OTP">("DETAILS");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -53,10 +60,44 @@ function SignUpForm() {
       email: "",
       password: "",
       confirmPassword: "",
+      otp: "", // Added OTP field
     },
   });
 
+  // Step 1: Send OTP
+  async function onSendOtp(values: z.infer<typeof formSchema>) {
+    setIsLoading(true);
+    try {
+      // Check if email already exists (optional optimization, but Register API checks it too)
+
+      const response = await fetch("/api/auth/otp/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: values.email, type: "REGISTER" }),
+      });
+
+      if (!response.ok) throw new Error("Failed to send verification code");
+
+      toast({ title: "Verification Code Sent", description: "Please check your email." });
+      setStep("OTP");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Something went wrong",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  // Step 2: Verify & Register
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (step === "DETAILS") {
+      await onSendOtp(values);
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -69,6 +110,7 @@ function SignUpForm() {
           name: values.name,
           email: values.email,
           password: values.password,
+          otp: values.otp, // Send OTP for verification
         }),
       });
 
@@ -79,7 +121,7 @@ function SignUpForm() {
 
       toast({
         title: "Success",
-        description: "Account created successfully. Signing you in...",
+        description: "Account verified and created successfully. Signing you in...",
       });
 
       await signIn("credentials", {
@@ -93,7 +135,7 @@ function SignUpForm() {
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Something went wrong",
+        description: error.message || "Invalid OTP or Registration failed",
         variant: "destructive",
       });
     } finally {
@@ -106,88 +148,95 @@ function SignUpForm() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">
-            Create an account
+            {step === "DETAILS" ? "Create an account" : "Verify Email"}
           </CardTitle>
           <CardDescription>
-            Enter your information to create your account
+            {step === "DETAILS"
+              ? "Enter your information to create your account"
+              : "Enter the verification code sent to your email"}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="John Doe"
-                        disabled={isLoading}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="name@example.com"
-                        type="email"
-                        disabled={isLoading}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="••••••••"
-                        type="password"
-                        disabled={isLoading}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Confirm Password</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="••••••••"
-                        type="password"
-                        disabled={isLoading}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+
+              {step === "DETAILS" && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="John Doe" disabled={isLoading} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input placeholder="name@example.com" type="email" disabled={isLoading} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <Input placeholder="••••••••" type="password" disabled={isLoading} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Confirm Password</FormLabel>
+                        <FormControl>
+                          <Input placeholder="••••••••" type="password" disabled={isLoading} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
+
+              {step === "OTP" && (
+                <FormField
+                  control={form.control}
+                  name="otp"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Verification Code</FormLabel>
+                      <FormControl>
+                        <Input placeholder="123456" className="text-center text-2xl tracking-widest" disabled={isLoading} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
               <Button className="w-full" type="submit" disabled={isLoading}>
-                {isLoading ? "Creating account..." : "Create Account"}
+                {isLoading
+                  ? "Processing..."
+                  : step === "DETAILS" ? "Send Verification Code" : "Verify & Create Account"}
               </Button>
             </form>
           </Form>

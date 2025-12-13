@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
+import { useState } from "react";
 import { signOut, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,34 +13,57 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import CartIcon from "@/components/CartIcon"; // ✅ Import CartIcon
+import CartIcon from "@/components/CartIcon";
+import SearchBar from "@/components/SearchBar";
+import { Menu, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Header() {
   const { data: session } = useSession();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const toggleMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+  const closeMenu = () => setIsMobileMenuOpen(false);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md shadow-sm transition-all supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-6">
-          <Link href="/" className="flex items-center space-x-2">
-            <span className="text-xl font-bold">UM Entreprise</span>
+          {/* Mobile Menu Button */}
+          <button
+            className="md:hidden p-2 -ml-2 text-foreground"
+            onClick={toggleMenu}
+            aria-label="Toggle menu"
+          >
+            {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+
+          <Link href="/" className="flex items-center space-x-2" onClick={closeMenu}>
+            <Image
+              src="/placeholder.png"
+              alt="UM Entreprise"
+              width={32}
+              height={32}
+              className="object-contain"
+            />
+            <span className="text-xl font-bold text-primary">UM Entreprise</span>
           </Link>
-          <nav className="hidden md:flex gap-6">
+          <nav className="hidden md:flex gap-2">
             <Link
               href="/products"
-              className="text-sm font-medium transition-colors hover:text-primary"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary hover:bg-primary/10 rounded-md px-3 py-2"
             >
               Products
             </Link>
             <Link
               href="/customize"
-              className="text-sm font-medium transition-colors hover:text-primary"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary hover:bg-primary/10 rounded-md px-3 py-2"
             >
-              Customize
+              Corporate Gifts
             </Link>
             <Link
               href="/about"
-              className="text-sm font-medium transition-colors hover:text-primary"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary hover:bg-primary/10 rounded-md px-3 py-2"
             >
               About
             </Link>
@@ -46,7 +71,9 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-4">
-          {/* ✅ Add Cart Icon */}
+          <div className="hidden md:block">
+            <SearchBar />
+          </div>
           <CartIcon />
 
           {session ? (
@@ -98,17 +125,62 @@ export default function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <div className="flex items-center gap-2">
-              <Button asChild variant="ghost" size="sm">
+            <div className="hidden md:flex items-center gap-2">
+              <Button asChild>
                 <Link href="/auth/signin">Sign In</Link>
-              </Button>
-              <Button asChild size="sm">
-                <Link href="/auth/signup">Sign Up</Link>
               </Button>
             </div>
           )}
         </div>
       </div>
+
+      {/* Mobile Navigation Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden border-b bg-background"
+          >
+            <div className="container flex flex-col gap-4 py-4 pb-6">
+              <Link
+                href="/products"
+                className="text-lg font-medium transition-colors hover:text-primary"
+                onClick={closeMenu}
+              >
+                Products
+              </Link>
+              <Link
+                href="/customize"
+                className="text-lg font-medium transition-colors hover:text-primary"
+                onClick={closeMenu}
+              >
+                Corporate Gifts
+              </Link>
+              <Link
+                href="/about"
+                className="text-lg font-medium transition-colors hover:text-primary"
+                onClick={closeMenu}
+              >
+                About
+              </Link>
+
+              {!session && (
+                <div className="flex flex-col gap-2 mt-2">
+                  <Button className="w-full" asChild onClick={closeMenu}>
+                    <Link href="/auth/signin">Sign In</Link>
+                  </Button>
+                </div>
+              )}
+
+              <div className="mt-2">
+                <SearchBar />
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }

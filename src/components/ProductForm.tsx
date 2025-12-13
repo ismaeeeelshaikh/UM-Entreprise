@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 import ImageUpload from "@/components/ImageUpload";
 import { Separator } from "@/components/ui/separator";
@@ -66,22 +67,22 @@ export default function ProductForm({
     resolver: zodResolver(formSchema),
     defaultValues: initialData
       ? {
-          ...initialData,
-          price: String(initialData.price),
-          stock: String(initialData.stock),
-          isCustomizable: initialData.isCustomizable ?? false, // ✅ Explicit default
-          customizationLabel: initialData.customizationLabel ?? "", 
-        }
+        ...initialData,
+        price: String(initialData.price),
+        stock: String(initialData.stock),
+        isCustomizable: initialData.isCustomizable ?? false, // ✅ Explicit default
+        customizationLabel: initialData.customizationLabel ?? "",
+      }
       : {
-          name: "",
-          description: "",
-          price: "",
-          images: [],
-          category: "",
-          stock: "",
-          isCustomizable: false, // ✅ Explicit default value
-          customizationLabel: "",
-        },
+        name: "",
+        description: "",
+        price: "",
+        images: [],
+        category: "",
+        stock: "",
+        isCustomizable: false, // ✅ Explicit default value
+        customizationLabel: "",
+      },
   });
 
   const onSubmit = async (data: ProductFormValues) => {
@@ -266,27 +267,55 @@ export default function ProductForm({
 
             <Separator />
 
-            {/* Customization */}
-            <FormField
-              control={form.control}
-              name="customizationLabel"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Customization Label (Optional)</FormLabel>
-                  <FormControl>
-                    <Input
-                      disabled={isLoading}
-                      placeholder="e.g., Enter name for engraving"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    If provided, customers can add custom text to this product
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
+            <div className="flex flex-col gap-4">
+              <FormField
+                control={form.control}
+                name="isCustomizable"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>
+                        Allow Customization?
+                      </FormLabel>
+                      <FormDescription>
+                        Check this if you want to allow customers to enter custom text (e.g. for engraving).
+                      </FormDescription>
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              {/* Customization Label - Only show if customizable is checked */}
+              {form.watch("isCustomizable") && (
+                <FormField
+                  control={form.control}
+                  name="customizationLabel"
+
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Customization Label (Optional)</FormLabel>
+                      <FormControl>
+                        <Input
+                          disabled={isLoading}
+                          placeholder="e.g., Enter name for engraving"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        If provided, customers can add custom text to this product
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               )}
-            />
+            </div>
 
             <Button disabled={isLoading} className="ml-auto" type="submit">
               {action}

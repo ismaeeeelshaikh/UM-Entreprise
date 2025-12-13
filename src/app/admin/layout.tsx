@@ -34,6 +34,9 @@ export default async function AdminLayout({
             <Link href="/admin/orders">Orders</Link>
           </Button>
           <Button asChild variant="ghost" className="w-full justify-start">
+            <Link href="/admin/inquiries">Corporate Inquiries</Link>
+          </Button>
+          <Button asChild variant="ghost" className="w-full justify-start">
             <Link href="/">← Back to Store</Link>
           </Button>
         </nav>

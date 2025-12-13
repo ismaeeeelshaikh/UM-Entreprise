@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import crypto from "crypto";
 import prisma from "@/lib/prisma";
+import { sendOrderNotification } from "@/lib/mail";
 
 export async function POST(request: Request) {
   try {
@@ -62,11 +63,22 @@ export async function POST(request: Request) {
         },
       },
       include: {
-        items: true,
+        items: {
+          include: {
+            product: true, // ✅ Include product details for email
+          },
+        },
       },
     });
 
     console.log("Order created successfully:", order.id);
+
+    // ✅ Send Order Notification Email
+    try {
+      await sendOrderNotification(order, session.user.email || "Unknown Customer");
+    } catch (emailError) {
+      console.error("Failed to send order notification:", emailError);
+    }
 
     return NextResponse.json({ success: true, orderId: order.id });
   } catch (error) {
