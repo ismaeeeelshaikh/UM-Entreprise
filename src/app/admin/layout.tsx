@@ -1,8 +1,7 @@
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { AdminSidebar } from "@/components/admin/AdminSidebar";
 
 export default async function AdminLayout({
   children,
@@ -17,30 +16,8 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="flex min-h-screen">
-      {/* Sidebar */}
-      <aside className="w-64 border-r bg-muted/40">
-        <div className="flex h-16 items-center border-b px-6">
-          <h2 className="text-lg font-semibold">Admin Panel</h2>
-        </div>
-        <nav className="space-y-2 p-4">
-          <Button asChild variant="ghost" className="w-full justify-start">
-            <Link href="/admin">Dashboard</Link>
-          </Button>
-          <Button asChild variant="ghost" className="w-full justify-start">
-            <Link href="/admin/products">Products</Link>
-          </Button>
-          <Button asChild variant="ghost" className="w-full justify-start">
-            <Link href="/admin/orders">Orders</Link>
-          </Button>
-          <Button asChild variant="ghost" className="w-full justify-start">
-            <Link href="/admin/inquiries">Corporate Inquiries</Link>
-          </Button>
-          <Button asChild variant="ghost" className="w-full justify-start">
-            <Link href="/">← Back to Store</Link>
-          </Button>
-        </nav>
-      </aside>
+    <div className="flex min-h-screen flex-col md:flex-row">
+      <AdminSidebar />
 
       {/* Main Content */}
       <main className="flex-1">

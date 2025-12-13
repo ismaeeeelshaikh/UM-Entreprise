@@ -57,7 +57,7 @@ export default async function ProductsPage({
       <div className="mb-6">
         <Select defaultValue={category || "ALL"}>
           <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Filter by category" />
+            <SelectValue />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="ALL">All Products</SelectItem>

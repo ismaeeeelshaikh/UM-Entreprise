@@ -169,7 +169,7 @@ function SignUpForm() {
                       <FormItem>
                         <FormLabel>Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="John Doe" disabled={isLoading} {...field} />
+                          <Input disabled={isLoading} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -182,7 +182,7 @@ function SignUpForm() {
                       <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Input placeholder="name@example.com" type="email" disabled={isLoading} {...field} />
+                          <Input type="email" disabled={isLoading} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -225,7 +225,7 @@ function SignUpForm() {
                     <FormItem>
                       <FormLabel>Verification Code</FormLabel>
                       <FormControl>
-                        <Input placeholder="123456" className="text-center text-2xl tracking-widest" disabled={isLoading} {...field} />
+                        <Input className="text-center text-2xl tracking-widest" disabled={isLoading} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

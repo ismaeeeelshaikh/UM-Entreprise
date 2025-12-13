@@ -57,14 +57,19 @@ export default function ImageUpload({
           };
 
           return (
-            <Button
-              type="button"
-              disabled={disabled}
-              variant="secondary"
-              onClick={onClick}
-            >
-              Upload an Image
-            </Button>
+            <div className="flex flex-col gap-2">
+              <Button
+                type="button"
+                disabled={disabled}
+                variant="secondary"
+                onClick={onClick}
+              >
+                Upload an Image
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                Recommended size: 1080x1080px (1:1 aspect ratio)
+              </p>
+            </div>
           );
         }}
       </CldUploadWidget>

@@ -50,6 +50,12 @@ export default function Header() {
           </Link>
           <nav className="hidden md:flex gap-2">
             <Link
+              href="/"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary hover:bg-primary/10 rounded-md px-3 py-2"
+            >
+              Home
+            </Link>
+            <Link
               href="/products"
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary hover:bg-primary/10 rounded-md px-3 py-2"
             >
@@ -144,6 +150,13 @@ export default function Header() {
             className="md:hidden border-b bg-background"
           >
             <div className="container flex flex-col gap-4 py-4 pb-6">
+              <Link
+                href="/"
+                className="text-lg font-medium transition-colors hover:text-primary"
+                onClick={closeMenu}
+              >
+                Home
+              </Link>
               <Link
                 href="/products"
                 className="text-lg font-medium transition-colors hover:text-primary"

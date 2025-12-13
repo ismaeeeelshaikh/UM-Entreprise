@@ -25,6 +25,7 @@ export async function POST(request: Request) {
       items,
       totalAmount,
       shippingAddress,
+      saveAddress,
     } = body;
 
     // Verify signature
@@ -70,6 +71,44 @@ export async function POST(request: Request) {
         },
       },
     });
+
+    // ✅ Update User's Default Address if requested
+    if (saveAddress) {
+      // 1. Unset other defaults
+      await prisma.address.updateMany({
+        where: { userId: session.user.id, isDefault: true },
+        data: { isDefault: false },
+      });
+
+      // 2. Create new Address record
+      await prisma.address.create({
+        data: {
+          userId: session.user.id,
+          fullName: shippingAddress.fullName,
+          email: shippingAddress.email,
+          phone: shippingAddress.phone,
+          country: shippingAddress.country,
+          address: shippingAddress.address,
+          city: shippingAddress.city,
+          state: shippingAddress.state,
+          pincode: shippingAddress.pincode,
+          isDefault: true,
+        },
+      });
+
+      // 3. Update User model (Legacy support)
+      await prisma.user.update({
+        where: { id: session.user.id },
+        data: {
+          defaultPhone: shippingAddress.phone,
+          defaultCountry: shippingAddress.country,
+          defaultAddress: shippingAddress.address,
+          defaultCity: shippingAddress.city,
+          defaultState: shippingAddress.state,
+          defaultPincode: shippingAddress.pincode,
+        },
+      });
+    }
 
     console.log("Order created successfully:", order.id);
 

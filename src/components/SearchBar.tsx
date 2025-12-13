@@ -23,24 +23,12 @@ function SearchBarContent() {
 
     return (
         <form onSubmit={handleSearch} className="relative w-full max-w-[300px]">
-            <div className="relative">
-                <Input
-                    type="search"
-                    placeholder="Search items..."
-                    className="pr-10"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                />
-                <Button
-                    type="submit"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                >
-                    <Search className="h-4 w-4 text-muted-foreground" />
-                    <span className="sr-only">Search</span>
-                </Button>
-            </div>
+            <Input
+                type="search"
+                placeholder="Search..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+            />
         </form>
     );
 }

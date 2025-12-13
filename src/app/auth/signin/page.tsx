@@ -168,7 +168,6 @@ function SignInForm() {
                     </div>
                     <FormControl>
                       <Input
-                        placeholder="••••••••"
                         type="password"
                         disabled={isLoading}
                         {...field}

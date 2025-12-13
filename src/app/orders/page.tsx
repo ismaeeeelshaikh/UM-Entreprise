@@ -26,11 +26,27 @@ interface Order {
   }[];
 }
 
+import { useToast } from "@/components/ui/use-toast";
+import { Loader2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
 export default function OrdersPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { toast } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -54,6 +70,39 @@ export default function OrdersPage() {
       console.error("Failed to fetch orders", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCancelOrder = async (orderId: string) => {
+    setCancellingId(orderId);
+    try {
+      const response = await fetch(`/api/orders/${orderId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: "CANCELED" }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to cancel order");
+      }
+
+      toast({
+        title: "Order Canceled",
+        description: "Your order has been successfully canceled.",
+      });
+
+      // Refresh orders
+      fetchOrders();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to cancel order. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setCancellingId(null);
     }
   };
 
@@ -84,10 +133,23 @@ export default function OrdersPage() {
       PENDING: "bg-yellow-500",
       PROCESSING: "bg-blue-500",
       SHIPPED: "bg-purple-500",
+      OUT_FOR_DELIVERY: "bg-orange-500",
       DELIVERED: "bg-green-500",
       CANCELED: "bg-red-500",
     };
     return colors[status] || "bg-gray-500";
+  };
+
+  const getStatusLabel = (status: string) => {
+    const labels: Record<string, string> = {
+      PENDING: "Ordered",
+      PROCESSING: "Processing",
+      SHIPPED: "Shipped",
+      OUT_FOR_DELIVERY: "Out for Delivery",
+      DELIVERED: "Delivered",
+      CANCELED: "Canceled",
+    };
+    return labels[status] || status;
   };
 
   return (
@@ -105,7 +167,7 @@ export default function OrdersPage() {
                 </p>
               </div>
               <Badge className={getStatusColor(order.status)}>
-                {order.status}
+                {getStatusLabel(order.status)}
               </Badge>
             </CardHeader>
             <CardContent>
@@ -136,10 +198,36 @@ export default function OrdersPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
                   <Button asChild variant="outline" size="sm">
                     <Link href={`/orders/${order.id}`}>View Details</Link>
                   </Button>
+
+                  {["PENDING", "PROCESSING"].includes(order.status) && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm" disabled={cancellingId === order.id}>
+                          {cancellingId === order.id && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                          Cancel Order
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. This will permanently cancel your order.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleCancelOrder(order.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Confirm Cancel
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+
                   <Badge variant="outline" className="ml-auto">
                     {order.paymentStatus}
                   </Badge>

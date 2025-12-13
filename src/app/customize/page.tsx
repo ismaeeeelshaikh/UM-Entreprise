@@ -151,17 +151,17 @@ export default function CorporateGiftingPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label htmlFor="name" className="text-sm font-medium">Full Name <span className="text-red-500">*</span></label>
-                  <Input id="name" required placeholder="John Doe" value={formData.name} onChange={handleChange} />
+                  <Input id="name" required value={formData.name} onChange={handleChange} />
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="company" className="text-sm font-medium">Company Name</label>
-                  <Input id="company" placeholder="Acme Inc." value={formData.company} onChange={handleChange} />
+                  <Input id="company" value={formData.company} onChange={handleChange} />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <label htmlFor="email" className="text-sm font-medium">Work Email <span className="text-red-500">*</span></label>
-                <Input id="email" type="email" required placeholder="john@company.com" value={formData.email} onChange={handleChange} />
+                <Input id="email" type="email" required value={formData.email} onChange={handleChange} />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -169,7 +169,7 @@ export default function CorporateGiftingPage() {
                   <label htmlFor="product" className="text-sm font-medium">Product Interest <span className="text-red-500">*</span></label>
                   <Select onValueChange={(val) => handleSelectChange("product", val)} value={formData.product}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select Product" />
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="wallets">Custom Wallets</SelectItem>
@@ -183,7 +183,7 @@ export default function CorporateGiftingPage() {
                   <label htmlFor="quantity" className="text-sm font-medium">Estimated Quantity <span className="text-red-500">*</span></label>
                   <Select onValueChange={(val) => handleSelectChange("quantity", val)} value={formData.quantity}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select Quantity" />
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="10-50">10 - 50</SelectItem>
@@ -199,7 +199,6 @@ export default function CorporateGiftingPage() {
                 <label htmlFor="message" className="text-sm font-medium">Additional Requirements</label>
                 <Textarea
                   id="message"
-                  placeholder="Tell us more about your event, timeline, or specific customization needs..."
                   className="min-h-[120px]"
                   value={formData.message}
                   onChange={handleChange}

@@ -62,7 +62,9 @@ export default function Hero() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl max-w-4xl text-slate-900 drop-shadow-sm"
           >
-            Crafting Memories, <br className="hidden sm:inline" />
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-primary to-slate-900">
+              Crafting Memories,
+            </span> <br className="hidden sm:inline" />
             One Gift at a Time.
           </motion.h1>
 
@@ -88,7 +90,7 @@ export default function Hero() {
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="h-12 px-8 text-base backdrop-blur-sm bg-background/50">
-              <Link href="/customize">Customize Now</Link>
+              <Link href="/customize">Corporate Gifts</Link>
             </Button>
           </motion.div>
         </div>

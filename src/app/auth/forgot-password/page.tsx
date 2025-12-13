@@ -138,7 +138,7 @@ export default function ForgotPasswordPage() {
                                     <FormItem>
                                         <FormLabel>Email</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="name@example.com" disabled={step !== "EMAIL" || isLoading} {...field} />
+                                            <Input disabled={step !== "EMAIL" || isLoading} {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -153,7 +153,7 @@ export default function ForgotPasswordPage() {
                                         <FormItem>
                                             <FormLabel>Verification Code</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="123456" disabled={step !== "OTP" || isLoading} {...field} />
+                                                <Input disabled={step !== "OTP" || isLoading} {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -169,7 +169,7 @@ export default function ForgotPasswordPage() {
                                         <FormItem>
                                             <FormLabel>New Password</FormLabel>
                                             <FormControl>
-                                                <Input type="password" placeholder="••••••••" disabled={isLoading} {...field} />
+                                                <Input type="password" disabled={isLoading} {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>

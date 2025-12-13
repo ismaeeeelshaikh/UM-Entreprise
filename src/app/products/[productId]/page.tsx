@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { notFound, useParams } from "next/navigation";
+import { notFound, useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,12 +27,13 @@ interface Product {
 export default function ProductDetailPage() {
   const params = useParams();
   const productId = params.productId as string;
+  const router = useRouter();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [customization, setCustomization] = useState("");
   const [quantity, setQuantity] = useState(1);
-  const [selectedImage, setSelectedImage] = useState<string>(""); // ✅ State for selected image
+  const [selectedImage, setSelectedImage] = useState<string>("");
 
   const addItem = useCart((state) => state.addItem);
   const { toast } = useToast();
@@ -47,7 +48,7 @@ export default function ProductDetailPage() {
         const data = await response.json();
         setProduct(data);
         if (data.images && data.images.length > 0) {
-          setSelectedImage(data.images[0]); // ✅ Set initial image
+          setSelectedImage(data.images[0]);
         }
       } catch (error) {
         notFound();
@@ -77,6 +78,21 @@ export default function ProductDetailPage() {
     });
   };
 
+  const handleBuyNow = () => {
+    if (!product) return;
+
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.images[0],
+      quantity,
+      customization: product.isCustomizable ? customization : undefined,
+    });
+
+    router.push("/checkout");
+  };
+
   if (loading) {
     return (
       <div className="container flex min-h-screen items-center justify-center py-10">
@@ -96,7 +112,7 @@ export default function ProductDetailPage() {
         <div className="space-y-4">
           <div className="relative aspect-square overflow-hidden rounded-lg border bg-muted">
             <Image
-              src={selectedImage || product.images[0] || "/placeholder.png"} // ✅ Use selectedImage
+              src={selectedImage || product.images[0] || "/placeholder.png"}
               alt={product.name}
               fill
               className="object-cover"
@@ -109,7 +125,7 @@ export default function ProductDetailPage() {
                 <div
                   key={index}
                   className={`relative aspect-square cursor-pointer overflow-hidden rounded-lg border-2 transition-all ${selectedImage === image ? "border-primary" : "border-transparent hover:border-muted-foreground"
-                    }`} // ✅ Add clickable interaction and active state
+                    }`}
                   onClick={() => setSelectedImage(image)}
                 >
                   <Image
@@ -153,7 +169,6 @@ export default function ProductDetailPage() {
                   id="customization"
                   value={customization}
                   onChange={(e) => setCustomization(e.target.value)}
-                  placeholder="Enter text for customization"
                   className="mt-2"
                 />
               </CardContent>
@@ -194,17 +209,22 @@ export default function ProductDetailPage() {
             </p>
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex flex-col gap-3">
             <Button
               size="lg"
-              className="flex-1"
+              className="w-full"
               disabled={product.stock === 0}
               onClick={handleAddToCart}
             >
               Add to Cart
             </Button>
-            <Button size="lg" variant="outline">
-              ♥
+            <Button
+              size="lg"
+              className="w-full"
+              disabled={product.stock === 0}
+              onClick={handleBuyNow}
+            >
+              Buy Now
             </Button>
           </div>
         </div>

@@ -113,6 +113,7 @@ export default function AdminOrdersPage() {
       PENDING: "bg-yellow-500",
       PROCESSING: "bg-blue-500",
       SHIPPED: "bg-purple-500",
+      OUT_FOR_DELIVERY: "bg-orange-500",
       DELIVERED: "bg-green-500",
       CANCELED: "bg-red-500",
     };
@@ -148,7 +149,6 @@ export default function AdminOrdersPage() {
           <div className="grid gap-4 md:grid-cols-2">
             <div>
               <Input
-                placeholder="Search by customer name, email, or order ID..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -156,15 +156,14 @@ export default function AdminOrdersPage() {
             <div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Filter by status" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="ALL">All Statuses</SelectItem>
-                  <SelectItem value="PENDING">Pending</SelectItem>
-                  <SelectItem value="PROCESSING">Processing</SelectItem>
+                  <SelectItem value="PROCESSING">Ordered</SelectItem>
                   <SelectItem value="SHIPPED">Shipped</SelectItem>
+                  <SelectItem value="OUT_FOR_DELIVERY">Out for delivery</SelectItem>
                   <SelectItem value="DELIVERED">Delivered</SelectItem>
-                  <SelectItem value="CANCELED">Canceled</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -229,11 +228,10 @@ export default function AdminOrdersPage() {
                           </Badge>
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="PENDING">Pending</SelectItem>
-                          <SelectItem value="PROCESSING">Processing</SelectItem>
+                          <SelectItem value="PROCESSING">Ordered</SelectItem>
                           <SelectItem value="SHIPPED">Shipped</SelectItem>
+                          <SelectItem value="OUT_FOR_DELIVERY">Out for delivery</SelectItem>
                           <SelectItem value="DELIVERED">Delivered</SelectItem>
-                          <SelectItem value="CANCELED">Canceled</SelectItem>
                         </SelectContent>
                       </Select>
                     </TableCell>

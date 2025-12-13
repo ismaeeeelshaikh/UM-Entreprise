@@ -71,7 +71,38 @@ export const sendOrderNotification = async (order: any, userEmail: string) => {
       subject,
       html,
     });
+
   } catch (error) {
     console.error("Failed to send order notification:", error);
+  }
+};
+
+export const sendContactFormNotification = async (data: { name: string; email: string; subject: string; message: string }) => {
+  const subject = `Contact Form: ${data.subject}`;
+
+  const html = `
+    <div style="font-family: sans-serif; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+      <h2 style="color: #1e293b;">New Contact Form Submission 📩</h2>
+      <p><strong>Name:</strong> ${data.name}</p>
+      <p><strong>Email:</strong> ${data.email}</p>
+      <p><strong>Subject:</strong> ${data.subject}</p>
+      <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;" />
+      <h3 style="color: #475569;">Message:</h3>
+      <p style="white-space: pre-wrap; background-color: #f8fafc; padding: 15px; border-radius: 4px;">${data.message}</p>
+    </div>
+  `;
+
+  try {
+    await transporter.sendMail({
+      from: process.env.EMAIL_SERVER_USER,
+      to: process.env.EMAIL_SERVER_USER, // Send to Admin
+      replyTo: data.email, // Allow replying directly to user
+      subject,
+      html,
+    });
+    console.log("Contact form email sent successfully");
+  } catch (error) {
+    console.error("Failed to send contact form email:", error);
+    throw new Error("Failed to send email");
   }
 };

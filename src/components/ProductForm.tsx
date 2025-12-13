@@ -166,7 +166,6 @@ export default function ProductForm({
                     <FormControl>
                       <Input
                         disabled={isLoading}
-                        placeholder="Product name"
                         {...field}
                       />
                     </FormControl>
@@ -185,11 +184,10 @@ export default function ProductForm({
                       disabled={isLoading}
                       onValueChange={field.onChange}
                       value={field.value}
-                      defaultValue={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a category" />
+                          <SelectValue />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -216,7 +214,6 @@ export default function ProductForm({
                   <FormControl>
                     <Textarea
                       disabled={isLoading}
-                      placeholder="Product description"
                       {...field}
                     />
                   </FormControl>
@@ -236,7 +233,6 @@ export default function ProductForm({
                       <Input
                         type="number"
                         disabled={isLoading}
-                        placeholder="9.99"
                         {...field}
                       />
                     </FormControl>
@@ -255,7 +251,6 @@ export default function ProductForm({
                       <Input
                         type="number"
                         disabled={isLoading}
-                        placeholder="100"
                         {...field}
                       />
                     </FormControl>
@@ -303,7 +298,6 @@ export default function ProductForm({
                       <FormControl>
                         <Input
                           disabled={isLoading}
-                          placeholder="e.g., Enter name for engraving"
                           {...field}
                         />
                       </FormControl>
