@@ -1,17 +1,85 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Check, ShoppingBag, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Suspense } from "react";
+import { useCart } from "@/store/useCart";
 
 function OrderSuccessContent() {
     const searchParams = useSearchParams();
+    const router = useRouter();
     const orderId = searchParams.get("orderId");
+    const { clearCart } = useCart();
+    const [verifying, setVerifying] = useState(false);
+    const [error, setError] = useState("");
+
+    useEffect(() => {
+        if (!orderId) return;
+
+        const verifyPayment = async () => {
+            const pendingOrderStr = localStorage.getItem("pendingOrder");
+            if (!pendingOrderStr) return; // Assume already verified or invalid
+
+            const pendingOrder = JSON.parse(pendingOrderStr);
+            if (pendingOrder.orderId !== orderId) return; // Mismatch
+
+            setVerifying(true);
+            try {
+                const res = await fetch("/api/orders/verify-cashfree-payment", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        orderId: orderId,
+                        items: pendingOrder.items,
+                        totalAmount: pendingOrder.totalAmount,
+                        shippingAddress: pendingOrder.shippingAddress,
+                        saveAddress: pendingOrder.saveAddress
+                    })
+                });
+
+                if (res.ok) {
+                    localStorage.removeItem("pendingOrder");
+                    clearCart();
+                } else {
+                    setError("Payment verification failed. Please contact support.");
+                }
+            } catch (err) {
+                console.error("Verification error", err);
+                setError("Something went wrong verifying your order.");
+            } finally {
+                setVerifying(false);
+            }
+        };
+
+        verifyPayment();
+    }, [orderId, clearCart]);
+
+    if (verifying) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center p-4">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+                <h2 className="text-xl font-semibold">Verifying Payment...</h2>
+                <p className="text-muted-foreground">Please do not close this window.</p>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center p-4">
+                <div className="text-red-500 mb-4 text-center">
+                    <h2 className="text-xl font-bold mb-2">Order Verification Failed</h2>
+                    <p>{error}</p>
+                </div>
+                <Button onClick={() => router.push("/contact")}>Contact Support</Button>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-slate-50/50 flex items-center justify-center p-4">

@@ -48,24 +48,30 @@ export async function PATCH(
     });
 
     // Handle Variants Update if provided
-    if (body.variants) {
-      // Strategy: Delete existing variants and re-create them (Simple & Robust)
-      // Transaction ensures data integrity
-      await prisma.$transaction([
+    if (body.variants !== undefined) {
+      // Strategy: Delete existing variants and re-create them
+      const operations: any[] = [
         prisma.productVariant.deleteMany({
           where: { productId: productId },
         }),
-        prisma.productVariant.createMany({
-          data: body.variants.map((variant: any) => ({
-            productId: productId,
-            color: variant.color,
-            colorCode: variant.colorCode || null,
-            price: variant.price ? parseFloat(variant.price) : null,
-            stock: parseInt(variant.stock) || 0,
-            images: variant.images || [],
-          })),
-        }),
-      ]);
+      ];
+
+      if (body.variants.length > 0) {
+        operations.push(
+          prisma.productVariant.createMany({
+            data: body.variants.map((variant: any) => ({
+              productId: productId,
+              color: variant.color,
+              colorCode: variant.colorCode || null,
+              price: variant.price ? parseFloat(variant.price) : null,
+              stock: parseInt(variant.stock) || 0,
+              images: variant.images || [],
+            })),
+          })
+        );
+      }
+
+      await prisma.$transaction(operations);
     }
 
     return NextResponse.json(product);
