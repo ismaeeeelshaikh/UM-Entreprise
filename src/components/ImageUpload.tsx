@@ -50,6 +50,10 @@ export default function ImageUpload({
       <CldUploadWidget
         onSuccess={onUpload}
         uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "um-entreprise"}
+        options={{
+          multiple: true,
+          maxFiles: 5
+        }}
       >
         {({ open }) => {
           const onClick = () => {

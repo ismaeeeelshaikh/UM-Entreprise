@@ -143,14 +143,7 @@ model CorporateInquiry {
 // E-COMMERCE MODELS
 // ------------------------------
 
-enum ProductCategory {
-  WALLET
-  PEN
-  KEYCHAIN
-  RING
-  BANGLE
-  OTHER
-}
+// Enum removed as Category is now free-text
 
 model Product {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -158,7 +151,8 @@ model Product {
   description String
   price       Float
   images      String[] // Array of Cloudinary image URLs
-  category    ProductCategory @default(OTHER)
+  category    String   @default("Other")
+  color       String?  // e.g. "Red", "Blue", "#FF0000"
   stock       Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

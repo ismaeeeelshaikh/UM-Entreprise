@@ -34,6 +34,7 @@ export async function POST(request: Request) {
         price: parseFloat(price),
         images,
         category,
+        color: body.color || null,
         stock: parseInt(stock) || 0,
         isCustomizable: isCustomizable || false,
         customizationLabel: customizationLabel || null,

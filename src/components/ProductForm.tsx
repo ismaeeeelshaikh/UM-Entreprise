@@ -37,6 +37,7 @@ const formSchema = z.object({
   price: z.string().min(1, "Price is required"),
   images: z.array(z.string()).min(1, "At least one image is required"),
   category: z.string().min(1, "Category is required"),
+  color: z.string().optional(),
   stock: z.string().min(1, "Stock is required"),
   isCustomizable: z.boolean(), // ✅ Removed .default(false)
   customizationLabel: z.string().optional(),
@@ -70,6 +71,7 @@ export default function ProductForm({
         ...initialData,
         price: String(initialData.price),
         stock: String(initialData.stock),
+        color: initialData.color || "", // ✅ Add color mapping
         isCustomizable: initialData.isCustomizable ?? false, // ✅ Explicit default
         customizationLabel: initialData.customizationLabel ?? "",
       }
@@ -79,6 +81,7 @@ export default function ProductForm({
         price: "",
         images: [],
         category: "",
+        color: "",
         stock: "",
         isCustomizable: false, // ✅ Explicit default value
         customizationLabel: "",
@@ -180,25 +183,13 @@ export default function ProductForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category</FormLabel>
-                    <Select
-                      disabled={isLoading}
-                      onValueChange={field.onChange}
-                      value={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="WALLET">Wallet</SelectItem>
-                        <SelectItem value="PEN">Pen</SelectItem>
-                        <SelectItem value="KEYCHAIN">Keychain</SelectItem>
-                        <SelectItem value="RING">Ring</SelectItem>
-                        <SelectItem value="BANGLE">Bangle</SelectItem>
-                        <SelectItem value="OTHER">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <Input
+                        placeholder="e.g. Wallet, Pen, etc."
+                        disabled={isLoading}
+                        {...field}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -250,6 +241,24 @@ export default function ProductForm({
                     <FormControl>
                       <Input
                         type="number"
+                        disabled={isLoading}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="color"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Color</FormLabel>
+                    <FormControl>
+                      <Input
+                        className="font-bold"
                         disabled={isLoading}
                         {...field}
                       />

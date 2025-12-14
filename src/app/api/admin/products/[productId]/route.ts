@@ -39,6 +39,7 @@ export async function PATCH(
         price: price ? parseFloat(price) : undefined,
         images,
         category,
+        color: body.color || null,
         stock: stock !== undefined ? parseInt(stock) : undefined,
         isCustomizable,
         customizationLabel,
@@ -65,6 +66,13 @@ export async function DELETE(
 
     // ✅ Await params first
     const { productId } = await params;
+
+    // Delete associated OrderItems first to avoid foreign key constraints
+    await prisma.orderItem.deleteMany({
+      where: {
+        productId: productId,
+      },
+    });
 
     await prisma.product.delete({
       where: {
