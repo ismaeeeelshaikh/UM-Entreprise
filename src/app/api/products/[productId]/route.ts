@@ -13,6 +13,9 @@ export async function GET(
       where: {
         id: productId,
       },
+      include: {
+        variants: true,
+      },
     });
 
     if (!product) {

@@ -23,21 +23,36 @@ export async function POST(request: Request) {
       customizationLabel,
     } = body;
 
-    if (!name || !description || !price || !images || !category) {
+    if (!name || !description || !category) {
       return new NextResponse("Missing required fields", { status: 400 });
+    }
+
+    const hasVariants = body.variants && body.variants.length > 0;
+
+    if (!hasVariants && (!price || !images || !stock)) {
+      return new NextResponse("Missing required fields for simple product", { status: 400 });
     }
 
     const product = await prisma.product.create({
       data: {
         name,
         description,
-        price: parseFloat(price),
-        images,
+        price: price ? parseFloat(price) : 0,
+        images: images || [],
         category,
         color: body.color || null,
-        stock: parseInt(stock) || 0,
+        stock: stock ? parseInt(stock) : 0,
         isCustomizable: isCustomizable || false,
         customizationLabel: customizationLabel || null,
+        variants: body.variants && body.variants.length > 0 ? {
+          create: body.variants.map((variant: any) => ({
+            color: variant.color,
+            colorCode: variant.colorCode || null,
+            price: variant.price ? parseFloat(variant.price) : null,
+            stock: parseInt(variant.stock) || 0,
+            images: variant.images || [],
+          }))
+        } : undefined,
       },
     });
 
@@ -59,6 +74,9 @@ export async function GET(request: Request) {
     const products = await prisma.product.findMany({
       orderBy: {
         createdAt: "desc",
+      },
+      include: {
+        variants: true,
       },
     });
 

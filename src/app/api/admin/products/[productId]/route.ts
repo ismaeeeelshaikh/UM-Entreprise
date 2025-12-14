@@ -18,6 +18,7 @@ export async function PATCH(
     const { productId } = await params;
 
     const body = await request.json();
+    console.log("[ADMIN_PRODUCT_PATCH_BODY]", JSON.stringify(body, null, 2));
     const {
       name,
       description,
@@ -40,15 +41,40 @@ export async function PATCH(
         images,
         category,
         color: body.color || null,
-        stock: stock !== undefined ? parseInt(stock) : undefined,
+        stock: (stock !== undefined && stock !== null && stock !== "") ? parseInt(String(stock)) : undefined,
         isCustomizable,
         customizationLabel,
       },
     });
 
+    // Handle Variants Update if provided
+    if (body.variants) {
+      // Strategy: Delete existing variants and re-create them (Simple & Robust)
+      // Transaction ensures data integrity
+      await prisma.$transaction([
+        prisma.productVariant.deleteMany({
+          where: { productId: productId },
+        }),
+        prisma.productVariant.createMany({
+          data: body.variants.map((variant: any) => ({
+            productId: productId,
+            color: variant.color,
+            colorCode: variant.colorCode || null,
+            price: variant.price ? parseFloat(variant.price) : null,
+            stock: parseInt(variant.stock) || 0,
+            images: variant.images || [],
+          })),
+        }),
+      ]);
+    }
+
     return NextResponse.json(product);
   } catch (error) {
-    console.error("[ADMIN_PRODUCT_PATCH]", error);
+    console.error("[ADMIN_PRODUCT_PATCH_ERROR]", error);
+    if (error instanceof Error) {
+      console.error("Error Message:", error.message);
+      console.error("Error Stack:", error.stack);
+    }
     return new NextResponse("Internal Error", { status: 500 });
   }
 }

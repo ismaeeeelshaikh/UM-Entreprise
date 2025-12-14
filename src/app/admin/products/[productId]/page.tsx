@@ -5,6 +5,9 @@ import ProductForm from "@/components/ProductForm";
 async function getProduct(productId: string) {
   const product = await prisma.product.findUnique({
     where: { id: productId },
+    include: {
+      variants: true,
+    },
   });
 
   if (!product) {

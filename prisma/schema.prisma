@@ -162,6 +162,19 @@ model Product {
   customizationLabel String?  // e.g., "Enter Name for Engraving"
 
   orderItems OrderItem[] // A product can be in many order items
+  variants   ProductVariant[] // One-to-many relation with variants
+}
+
+model ProductVariant {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  productId String   @db.ObjectId
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  color     String   // e.g. "Red", "Blue"
+  colorCode String?  // e.g. "#FF0000"
+  price     Float?   // Optional override, if null use product price
+  stock     Int      @default(0)
+  images    String[] // Specific images for this variant
 }
 
 enum OrderStatus {
@@ -202,6 +215,10 @@ model OrderItem {
 
   // Stored Customization
   customizationText String? // e.g., "Ismaeel"
+
+  // Variant Information (Snapshot)
+  selectedColor String? // e.g., "Red"
+  selectedVariantId String? // Optional reference to the variant ID
 }
 
 

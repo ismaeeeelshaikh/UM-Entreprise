@@ -8,6 +8,9 @@ async function getProducts() {
     orderBy: {
       createdAt: "desc",
     },
+    include: {
+      variants: true,
+    },
   });
   return products;
 }

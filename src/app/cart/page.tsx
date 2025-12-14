@@ -14,18 +14,18 @@ export default function CartPage() {
   const { items, removeItem, updateQuantity, getTotalPrice } = useCart();
 
   if (items.length === 0) {
-  return (
-    <div className="container py-20">
-      <EmptyState
-        title="Your cart is empty"
-        description="Add some products to get started with your order"
-        actionLabel="Browse Products"
-        actionHref="/products"
-        icon={<ShoppingCart className="h-16 w-16" />}
-      />
-    </div>
-  );
-}
+    return (
+      <div className="container py-20">
+        <EmptyState
+          title="Your cart is empty"
+          description="Add some products to get started with your order"
+          actionLabel="Browse Products"
+          actionHref="/products"
+          icon={<ShoppingCart className="h-16 w-16" />}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="container py-10">
@@ -59,6 +59,11 @@ export default function CartPage() {
                         {item.customization && (
                           <p className="mt-1 text-sm text-primary">
                             Custom: {item.customization}
+                          </p>
+                        )}
+                        {item.selectedColor && (
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            Color: {item.selectedColor}
                           </p>
                         )}
                       </div>

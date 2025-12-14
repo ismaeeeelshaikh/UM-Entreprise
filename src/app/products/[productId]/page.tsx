@@ -12,6 +12,15 @@ import { Label } from "@/components/ui/label";
 import { useCart } from "@/store/useCart";
 import { useToast } from "@/components/ui/use-toast";
 
+interface ProductVariant {
+  id: string;
+  color: string;
+  colorCode: string | null;
+  price: number | null;
+  stock: number;
+  images: string[];
+}
+
 interface Product {
   id: string;
   name: string;
@@ -22,6 +31,7 @@ interface Product {
   stock: number;
   isCustomizable: boolean;
   customizationLabel: string | null;
+  variants?: ProductVariant[];
 }
 
 export default function ProductDetailPage() {
@@ -34,6 +44,7 @@ export default function ProductDetailPage() {
   const [customization, setCustomization] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState<string>("");
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
 
   const addItem = useCart((state) => state.addItem);
   const { toast } = useToast();
@@ -47,8 +58,17 @@ export default function ProductDetailPage() {
         }
         const data = await response.json();
         setProduct(data);
-        if (data.images && data.images.length > 0) {
-          setSelectedImage(data.images[0]);
+
+        let initialImages = data.images;
+
+        // Auto-select first variant if available
+        if (data.variants && data.variants.length > 0) {
+          setSelectedVariant(data.variants[0]);
+          initialImages = data.variants[0].images;
+        }
+
+        if (initialImages && initialImages.length > 0) {
+          setSelectedImage(initialImages[0]);
         }
       } catch (error) {
         notFound();
@@ -66,15 +86,16 @@ export default function ProductDetailPage() {
     addItem({
       id: product.id,
       name: product.name,
-      price: product.price,
-      image: product.images[0],
+      price: selectedVariant?.price || product.price, // Use variant price if available
+      image: selectedVariant ? selectedVariant.images[0] : product.images[0],
       quantity,
       customization: product.isCustomizable ? customization : undefined,
+      selectedColor: selectedVariant?.color || undefined, // Add selected color
     });
 
     toast({
       title: "Added to cart",
-      description: `${product.name} has been added to your cart`,
+      description: `${product.name} ${selectedVariant ? `(${selectedVariant.color}) ` : ""}has been added to your cart`,
     });
   };
 
@@ -84,10 +105,11 @@ export default function ProductDetailPage() {
     addItem({
       id: product.id,
       name: product.name,
-      price: product.price,
-      image: product.images[0],
+      price: selectedVariant?.price || product.price,
+      image: selectedVariant ? selectedVariant.images[0] : product.images[0],
       quantity,
       customization: product.isCustomizable ? customization : undefined,
+      selectedColor: selectedVariant?.color || undefined,
     });
 
     router.push("/checkout");
@@ -112,16 +134,16 @@ export default function ProductDetailPage() {
         <div className="space-y-4">
           <div className="relative aspect-square overflow-hidden rounded-lg border bg-muted">
             <Image
-              src={selectedImage || product.images[0] || "/placeholder.png"}
+              src={selectedImage || (selectedVariant ? selectedVariant.images[0] : product.images[0]) || "/placeholder.png"}
               alt={product.name}
               fill
               className="object-cover"
               priority
             />
           </div>
-          {product.images.length > 0 && (
+          {(selectedVariant ? selectedVariant.images : product.images).length > 0 && (
             <div className="grid grid-cols-4 gap-4">
-              {product.images.map((image, index) => (
+              {(selectedVariant ? selectedVariant.images : product.images).map((image, index) => (
                 <div
                   key={index}
                   className={`relative aspect-square cursor-pointer overflow-hidden rounded-lg border-2 transition-all ${selectedImage === image ? "border-primary" : "border-transparent hover:border-muted-foreground"
@@ -148,11 +170,40 @@ export default function ProductDetailPage() {
             </Badge>
             <h1 className="text-3xl font-bold">{product.name}</h1>
             <p className="mt-2 text-2xl font-bold">
-              ₹{product.price.toFixed(2)}
+              ₹{(selectedVariant?.price || product.price).toFixed(2)}
             </p>
           </div>
 
           <Separator />
+
+          {/* Variants Selector */}
+          {product.variants && product.variants.length > 0 && (
+            <div>
+              <h3 className="mb-3 font-semibold text-sm">Select Color</h3>
+              <div className="flex flex-wrap gap-3">
+                {product.variants.map((variant) => (
+                  <button
+                    key={variant.id}
+                    onClick={() => {
+                      setSelectedVariant(variant);
+                      if (variant.images.length > 0) {
+                        setSelectedImage(variant.images[0]);
+                      }
+                    }}
+                    className={`
+                        relative px-4 py-2 rounded-md border text-sm font-medium transition-all
+                        ${selectedVariant?.id === variant.id
+                        ? "border-primary bg-primary/10 text-primary ring-2 ring-primary ring-offset-2"
+                        : "border-muted hover:border-foreground/50 text-muted-foreground hover:text-foreground"
+                      }
+                      `}
+                  >
+                    {variant.color}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div>
             <h2 className="mb-2 font-semibold">Description</h2>
@@ -193,19 +244,19 @@ export default function ProductDetailPage() {
                 onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
                 className="w-20 text-center"
                 min="1"
-                max={product.stock}
+                max={selectedVariant ? selectedVariant.stock : product.stock}
               />
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                disabled={quantity >= product.stock}
+                onClick={() => setQuantity(Math.min(selectedVariant ? selectedVariant.stock : product.stock, quantity + 1))}
+                disabled={quantity >= (selectedVariant ? selectedVariant.stock : product.stock)}
               >
                 +
               </Button>
             </div>
             <p className="text-sm text-muted-foreground">
-              Stock: {product.stock > 0 ? `${product.stock} available` : "Out of stock"}
+              Stock: {(selectedVariant ? selectedVariant.stock : product.stock) > 0 ? `${(selectedVariant ? selectedVariant.stock : product.stock)} available` : "Out of stock"}
             </p>
           </div>
 
@@ -213,7 +264,7 @@ export default function ProductDetailPage() {
             <Button
               size="lg"
               className="w-full"
-              disabled={product.stock === 0}
+              disabled={(selectedVariant ? selectedVariant.stock : product.stock) === 0}
               onClick={handleAddToCart}
             >
               Add to Cart
@@ -221,7 +272,7 @@ export default function ProductDetailPage() {
             <Button
               size="lg"
               className="w-full"
-              disabled={product.stock === 0}
+              disabled={(selectedVariant ? selectedVariant.stock : product.stock) === 0}
               onClick={handleBuyNow}
             >
               Buy Now

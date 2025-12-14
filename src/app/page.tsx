@@ -14,6 +14,9 @@ export default async function HomePage() {
     orderBy: {
       createdAt: "desc",
     },
+    include: {
+      variants: true,
+    },
   });
 
   return (
@@ -48,9 +51,10 @@ export default async function HomePage() {
               name={product.name}
               description={product.description}
               price={product.price}
-              images={product.images}
+              images={product.images && product.images.length > 0 ? product.images : (product.variants?.[0]?.images || [])}
               category={product.category}
               isCustomizable={product.isCustomizable}
+              variants={product.variants}
             />
           ))}
         </div>

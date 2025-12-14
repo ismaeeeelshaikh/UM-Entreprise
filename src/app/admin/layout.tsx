@@ -20,7 +20,7 @@ export default async function AdminLayout({
       <AdminSidebar />
 
       {/* Main Content */}
-      <main className="flex-1">
+      <main className="flex-1 w-full overflow-x-hidden">
         <div className="container py-6">{children}</div>
       </main>
     </div>

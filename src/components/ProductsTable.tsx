@@ -68,18 +68,19 @@ export default function ProductsTable({ products }: ProductsTableProps) {
             <TableCell>
               <div className="relative h-16 w-16">
                 <Image
-                  src={product.images[0]}
+                  src={product.images?.[0] || product.variants?.[0]?.images?.[0] || "/placeholder.png"}
                   alt={product.name}
                   fill
+                  sizes="64px"
                   className="rounded-md object-cover"
                 />
               </div>
             </TableCell>
-            <TableCell className="font-medium">{product.name}</TableCell>
-            <TableCell>
-              <Badge variant="outline">{product.category}</Badge>
+            <TableCell className="font-medium whitespace-normal break-words min-w-[150px]">{product.name}</TableCell>
+            <TableCell className="whitespace-normal">
+              <Badge variant="outline" className="whitespace-normal text-center h-auto py-1">{product.category}</Badge>
             </TableCell>
-            <TableCell>₹{product.price.toFixed(2)}</TableCell>
+            <TableCell>₹{(product.price > 0 ? product.price : (product.variants?.[0]?.price || 0)).toFixed(2)}</TableCell>
             <TableCell>{product.stock}</TableCell>
             <TableCell className="space-x-2">
               <Button asChild variant="outline" size="sm">

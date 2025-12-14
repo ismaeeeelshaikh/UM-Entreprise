@@ -28,6 +28,9 @@ async function getProducts(category?: string, search?: string) {
     orderBy: {
       createdAt: "desc",
     },
+    include: {
+      variants: true,
+    },
   });
 
   return products;
@@ -82,16 +85,17 @@ export default async function ProductsPage({
         </div>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {products.map((product) => (
+          {products.map((product: any) => (
             <ProductCard
               key={product.id}
               id={product.id}
               name={product.name}
               description={product.description}
               price={product.price}
-              images={product.images}
+              images={product.images && product.images.length > 0 ? product.images : (product.variants?.[0]?.images || [])}
               category={product.category}
               isCustomizable={product.isCustomizable}
+              variants={product.variants}
             />
           ))}
         </div>

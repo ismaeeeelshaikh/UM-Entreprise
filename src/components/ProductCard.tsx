@@ -14,6 +14,7 @@ interface ProductCardProps {
   images: string[];
   category: string;
   isCustomizable: boolean;
+  variants?: any[]; // Allow variants to be passed for fallback logic
 }
 
 export default function ProductCard({
@@ -24,6 +25,7 @@ export default function ProductCard({
   images,
   category,
   isCustomizable,
+  variants,
 }: ProductCardProps) {
   return (
     <Card className="overflow-hidden transition-all hover:shadow-lg">
@@ -44,11 +46,11 @@ export default function ProductCard({
         <Badge variant="outline" className="mb-2">
           {category}
         </Badge>
-        <h3 className="font-semibold line-clamp-1">{name}</h3>
+        <h3 className="font-semibold line-clamp-2 min-h-[3rem]">{name}</h3>
         <p className="text-sm text-muted-foreground line-clamp-2">
           {description}
         </p>
-        <p className="mt-2 text-lg font-bold">₹{price.toFixed(2)}</p>
+        <p className="mt-2 text-lg font-bold">₹{(price > 0 ? price : (variants?.[0]?.price || 0)).toFixed(2)}</p>
       </CardContent>
       <CardFooter className="p-4 pt-0">
         <Button asChild className="w-full">

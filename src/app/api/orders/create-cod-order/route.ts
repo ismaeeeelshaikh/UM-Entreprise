@@ -34,6 +34,7 @@ export async function POST(request: Request) {
             quantity: item.quantity,
             priceAtPurchase: item.price,
             customizationText: item.customization || null,
+            selectedColor: item.selectedColor || null,
           })),
         },
       },

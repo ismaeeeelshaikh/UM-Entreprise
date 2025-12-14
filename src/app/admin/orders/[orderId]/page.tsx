@@ -35,6 +35,7 @@ interface OrderDetail {
     quantity: number;
     priceAtPurchase: number;
     customizationText: string | null;
+    selectedColor: string | null; // Add this
     product: {
       name: string;
       description: string;
@@ -154,6 +155,11 @@ export default function AdminOrderDetailPage() {
                     {item.customizationText && (
                       <p className="mt-1 text-sm text-primary">
                         Custom: {item.customizationText}
+                      </p>
+                    )}
+                    {item.selectedColor && (
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Color: {item.selectedColor}
                       </p>
                     )}
                     <p className="mt-2 text-sm">
