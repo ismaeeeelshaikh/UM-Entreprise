@@ -15,7 +15,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import CartIcon from "@/components/CartIcon";
 import SearchBar from "@/components/SearchBar";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Header() {
@@ -80,6 +80,12 @@ export default function Header() {
           <div className="hidden md:block">
             <SearchBar />
           </div>
+          <Button variant="ghost" size="icon" asChild className="hidden md:flex">
+            <Link href="/wishlist">
+              <Heart className="h-5 w-5" />
+              <span className="sr-only">Wishlist</span>
+            </Link>
+          </Button>
           <CartIcon />
 
           {session ? (

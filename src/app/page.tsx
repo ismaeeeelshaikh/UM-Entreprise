@@ -16,6 +16,11 @@ export default async function HomePage() {
     },
     include: {
       variants: true,
+      reviews: {
+        select: {
+          rating: true
+        }
+      }
     },
   });
 
@@ -55,6 +60,7 @@ export default async function HomePage() {
               category={product.category}
               isCustomizable={product.isCustomizable}
               variants={product.variants}
+              reviews={product.reviews}
             />
           ))}
         </div>

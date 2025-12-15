@@ -17,13 +17,41 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { items, totalAmount, shippingAddress, saveAddress } = body;
+    const { items, totalAmount, shippingAddress, saveAddress, couponCode } = body;
+
+    let finalAmount = totalAmount;
+    let discountAmount = 0;
+
+    // Validate Coupon if provided
+    if (couponCode) {
+      const coupon = await prisma.coupon.findUnique({
+        where: { code: couponCode },
+      });
+
+      if (coupon && coupon.isActive && (!coupon.expiresAt || new Date() < coupon.expiresAt)) {
+        // Re-calculate discount on server side for security
+        // Calculate cart subtotal from items to prevent spoofing
+        const cartSubtotal = items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
+
+        if (!coupon.minOrderValue || cartSubtotal >= coupon.minOrderValue) {
+          if (coupon.discountType === "PERCENTAGE") {
+            discountAmount = (cartSubtotal * coupon.discountValue) / 100;
+          } else {
+            discountAmount = coupon.discountValue;
+          }
+          discountAmount = Math.min(discountAmount, cartSubtotal);
+          finalAmount = cartSubtotal - discountAmount;
+        }
+      }
+    }
 
     // Create order with COD payment method
     const order = await prisma.order.create({
       data: {
         userId: session.user.id,
-        totalAmount,
+        totalAmount: finalAmount, // Use server-calculated amount
+        discountAmount,
+        couponCode: discountAmount > 0 ? couponCode : null,
         status: "PENDING",
         paymentMethod: "COD",
         paymentStatus: "COD", // Will be paid on delivery

@@ -23,6 +23,11 @@ async function getProducts(category?: string, search?: string) {
     },
     include: {
       variants: true,
+      reviews: {
+        select: {
+          rating: true
+        }
+      }
     },
   });
 
@@ -71,6 +76,7 @@ export default async function ProductsPage({
               category={product.category}
               isCustomizable={product.isCustomizable}
               variants={product.variants}
+              reviews={product.reviews}
             />
           ))}
         </div>

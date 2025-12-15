@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ShoppingBag, Users, LayoutDashboard, Package, Menu, X, Mail } from "lucide-react";
+import { Tag } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -12,6 +13,7 @@ const navItems = [
     { href: "/admin/products", label: "Products", icon: Package },
     { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
     { href: "/admin/inquiries", label: "Inquiries", icon: Mail },
+    { href: "/admin/coupons", label: "Coupons", icon: Tag },
 ];
 
 export function AdminSidebar() {

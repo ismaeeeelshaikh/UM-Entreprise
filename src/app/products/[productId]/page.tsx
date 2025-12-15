@@ -11,6 +11,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCart } from "@/store/useCart";
 import { useToast } from "@/components/ui/use-toast";
+import Reviews from "@/components/Reviews";
+import WishlistButton from "@/components/WishlistButton";
+import SimilarProducts from "@/components/SimilarProducts";
 
 interface ProductVariant {
   id: string;
@@ -128,7 +131,7 @@ export default function ProductDetailPage() {
   }
 
   return (
-    <div className="container py-10">
+    <div className="container py-10 px-4 md:px-6">
       <div className="grid gap-8 md:grid-cols-2">
         {/* Images */}
         <div className="space-y-4">
@@ -140,6 +143,7 @@ export default function ProductDetailPage() {
               className="object-cover"
               priority
             />
+            <WishlistButton productId={product.id} className="absolute top-4 right-4 scale-125" />
           </div>
           {(selectedVariant ? selectedVariant.images : product.images).length > 0 && (
             <div className="grid grid-cols-4 gap-4">
@@ -280,6 +284,10 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </div>
+
+      <SimilarProducts currentProductId={product.id} category={product.category} />
+
+      <Reviews productId={product.id} />
     </div>
   );
 }

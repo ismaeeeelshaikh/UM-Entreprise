@@ -7,7 +7,7 @@ import { Toaster } from "@/components/ui/toaster";
 import SessionProvider from "@/components/SessionProvider";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import Script from "next/script"; // ✅ Import Script
+import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -16,6 +16,7 @@ export const metadata: Metadata = {
   description: "Shop custom-engraved wallets, pens, keychains, and more.",
 };
 
+// Inside default function RootLayout
 export default function RootLayout({
   children,
 }: Readonly<{

@@ -9,7 +9,7 @@ export async function GET(request: Request) {
 
     // Build where clause
     const whereClause: Prisma.ProductWhereInput = {};
-    
+
     if (category && category !== "ALL") {
       whereClause.category = category as any;
     }
@@ -19,6 +19,14 @@ export async function GET(request: Request) {
       orderBy: {
         createdAt: "desc",
       },
+      include: {
+        variants: true,
+        reviews: {
+          select: {
+            rating: true
+          }
+        }
+      }
     });
 
     return NextResponse.json(products);

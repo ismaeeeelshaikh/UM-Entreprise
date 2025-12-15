@@ -29,7 +29,7 @@ import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useCart } from "@/store/useCart";
 import { useToast } from "@/components/ui/use-toast";
-import { Plus, MapPin, Pencil, Trash2, CheckCircle2, Truck } from "lucide-react";
+import { Plus, MapPin, Pencil, Trash2, CheckCircle2, Truck, Tag } from "lucide-react";
 import { addDays, format } from "date-fns";
 
 const indianStates = [
@@ -86,7 +86,32 @@ export default function CheckoutPage() {
   const [isFetchingPincode, setIsFetchingPincode] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"ONLINE" | "COD">("ONLINE");
 
-  // Address Management State
+  /* Coupon State */
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount: number } | null>(null);
+  const [couponMessage, setCouponMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [isVerifyingCoupon, setIsVerifyingCoupon] = useState(false);
+  const [availableCoupon, setAvailableCoupon] = useState<{ code: string; discountValue: number; discountType: string } | null>(null);
+
+  useEffect(() => {
+    // Fetch active coupon for display
+    const fetchActiveCoupon = async () => {
+      try {
+        const res = await fetch("/api/coupons/active");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.found) {
+            setAvailableCoupon(data.coupon);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch active coupon");
+      }
+    };
+    fetchActiveCoupon();
+  }, []);
+
+
   const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
@@ -174,6 +199,34 @@ export default function CheckoutPage() {
     });
   };
 
+  const handleDeleteAddress = async (addressId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm("Are you sure you want to delete this address?")) return;
+
+    try {
+      const res = await fetch(`/api/user/addresses/${addressId}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        toast({ title: "Address deleted successfully" });
+        await fetchAddresses(); // Refresh list
+        // Verify if selected address was deleted
+        if (selectedAddressId === addressId) {
+          setSelectedAddressId(null);
+        }
+      } else {
+        throw new Error("Failed to delete");
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Could not delete address",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleEdit = (addr: Address, e: React.MouseEvent) => {
     e.stopPropagation();
     setIsEditingId(addr.id);
@@ -212,6 +265,40 @@ export default function CheckoutPage() {
       return () => clearTimeout(timeoutId);
     }
   }, [pincode, selectedCountry, form, toast, isAddingNew, isEditingId]);
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setIsVerifyingCoupon(true);
+    setCouponMessage(null);
+
+    try {
+      const res = await fetch("/api/coupons/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: couponCode, cartTotal: getTotalPrice() }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.valid) {
+        setAppliedCoupon({ code: couponCode, discount: data.discountAmount });
+        setCouponMessage({ type: "success", text: `Success! You saved ₹${data.discountAmount}` });
+      } else {
+        setAppliedCoupon(null);
+        setCouponMessage({ type: "error", text: data.message || "Invalid Coupon" });
+      }
+    } catch (error) {
+      setCouponMessage({ type: "error", text: "Something went wrong" });
+    } finally {
+      setIsVerifyingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    setCouponMessage(null);
+  };
 
   const onFormSubmit = async (values: CheckoutFormValues) => {
     // If adding new or editing, save/update address first via API
@@ -267,6 +354,11 @@ export default function CheckoutPage() {
 
     setIsLoading(true);
 
+    // Calculate final amount after discount
+    const finalAmount = appliedCoupon
+      ? Math.max(0, getTotalPrice() - appliedCoupon.discount)
+      : getTotalPrice();
+
     try {
       // ✅ Handle Cash on Delivery
       if (paymentMethod === "COD") {
@@ -281,9 +373,10 @@ export default function CheckoutPage() {
           },
           body: JSON.stringify({
             items: items,
-            totalAmount: getTotalPrice(),
+            totalAmount: finalAmount,
             shippingAddress: values,
-            saveAddress: values.saveAddress, // Legacy support, though handled by address API now
+            saveAddress: values.saveAddress,
+            couponCode: appliedCoupon?.code, // Pass coupon code
           }),
         });
 
@@ -315,8 +408,9 @@ export default function CheckoutPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          amount: getTotalPrice(),
+          amount: finalAmount,
           customerPhone: values.phone,
+          couponCode: appliedCoupon?.code, // Pass coupon code
         }),
       });
 
@@ -330,10 +424,11 @@ export default function CheckoutPage() {
       // Save pending order details for verification on return
       localStorage.setItem("pendingOrder", JSON.stringify({
         items,
-        totalAmount: getTotalPrice(),
+        totalAmount: finalAmount,
         shippingAddress: values,
         saveAddress: values.saveAddress,
-        orderId: order_id
+        orderId: order_id,
+        couponCode: appliedCoupon?.code // Save coupon for reference
       }));
 
       const checkoutOptions = {
@@ -377,6 +472,7 @@ export default function CheckoutPage() {
         {/* Shipping Information Column */}
         <div className="lg:col-span-2 space-y-6">
 
+
           {/* Saved Addresses List */}
           {!isAddingNew && !isEditingId && savedAddresses.length > 0 && (
             <Card>
@@ -403,14 +499,26 @@ export default function CheckoutPage() {
                       <p className="text-sm text-muted-foreground">{addr.country}</p>
                       <p className="text-sm text-muted-foreground mt-1">Phone: {addr.phone}</p>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-2 top-2 h-8 w-8 p-0"
-                      onClick={(e) => handleEdit(addr, e)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
+                    <div className="absolute right-2 top-2 flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={(e) => handleEdit(addr, e)}
+                        title="Edit Address"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
+                        onClick={(e) => handleDeleteAddress(addr.id, e)}
+                        title="Delete Address"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 ))}
 
@@ -667,7 +775,6 @@ export default function CheckoutPage() {
             </CardContent>
           </Card>
 
-          {/* Main Action Button */}
           {/* Delivery Estimate Banner */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center gap-3 text-blue-800 mb-6">
             <Truck className="h-5 w-5 text-blue-600" />
@@ -732,10 +839,56 @@ export default function CheckoutPage() {
                 <span className="text-muted-foreground">Shipping</span>
                 <span>Free</span>
               </div>
+
+              {/* Discount Row */}
+              {appliedCoupon && (
+                <div className="flex justify-between text-sm text-green-600 animate-in fade-in slide-in-from-top-1">
+                  <span>Discount ({appliedCoupon.code})</span>
+                  <span>-₹{appliedCoupon.discount.toFixed(2)}</span>
+                </div>
+              )}
+
+              {/* Coupon Input */}
+              <div className="space-y-2 pt-2">
+                {availableCoupon && !appliedCoupon && (
+                  <div className="text-sm rounded-md bg-primary/10 p-3 mb-2 border border-primary/20">
+                    <p className="font-medium text-primary flex items-center gap-2">
+                      <Tag className="h-4 w-4" />
+                      Available Offer
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Use code <span className="font-bold text-foreground cursor-pointer underline" onClick={() => setCouponCode(availableCoupon.code)}>{availableCoupon.code}</span> for {availableCoupon.discountType === "PERCENTAGE" ? `${availableCoupon.discountValue}%` : `₹${availableCoupon.discountValue}`} OFF
+                    </p>
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Promo Code"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    disabled={!!appliedCoupon}
+                  />
+                  {appliedCoupon ? (
+                    <Button variant="outline" size="icon" onClick={handleRemoveCoupon}>
+                      <Trash2 className="h-4 w-4 text-red-500" />
+                    </Button>
+                  ) : (
+                    <Button variant="secondary" onClick={handleApplyCoupon} disabled={isVerifyingCoupon || !couponCode.trim()}>
+                      {isVerifyingCoupon ? "..." : "Apply"}
+                    </Button>
+                  )}
+                </div>
+                {couponMessage && (
+                  <p className={`text-xs ${couponMessage.type === 'success' ? 'text-green-600' : 'text-red-500'}`}>
+                    {couponMessage.text}
+                  </p>
+                )}
+              </div>
+
               <Separator />
               <div className="flex justify-between text-lg font-bold">
                 <span>Total</span>
-                <span>₹{getTotalPrice().toFixed(2)}</span>
+                <span>₹{(Math.max(0, getTotalPrice() - (appliedCoupon?.discount || 0))).toFixed(2)}</span>
               </div>
             </CardContent>
           </Card>

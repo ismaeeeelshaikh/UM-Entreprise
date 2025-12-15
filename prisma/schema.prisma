@@ -42,6 +42,8 @@ model User {
   updatedAt      DateTime  @updatedAt
 
   addresses      Address[]
+  reviews        Review[]
+  wishlist       Wishlist[]
 }
 
 model Address {
@@ -163,6 +165,8 @@ model Product {
 
   orderItems OrderItem[] // A product can be in many order items
   variants   ProductVariant[] // One-to-many relation with variants
+  reviews    Review[] // One-to-many relation with reviews
+  wishlist   Wishlist[]
 }
 
 model ProductVariant {
@@ -196,6 +200,11 @@ model Order {
   paymentId        String?
   paymentStatus    String?
   shippingAddress  String
+  
+  // Coupon Info
+  couponCode       String?
+  discountAmount   Float       @default(0)
+  
   items            OrderItem[]
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
@@ -222,3 +231,62 @@ model OrderItem {
 }
 
 
+// ------------------------------
+// REVIEW MODEL
+// ------------------------------
+
+model Review {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  rating    Int      // 1-5
+  comment   String
+  images    String[] // Optional review photos
+  
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  
+  productId String   @db.ObjectId
+  product   Product  @relation(fields: [productId], references: [id])
+  
+  createdAt DateTime @default(now())
+}
+
+// ------------------------------
+// WISHLIST MODEL
+// ------------------------------
+
+model Wishlist {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String   @db.ObjectId
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+}
+
+// ------------------------------
+// COUPON MODEL
+// ------------------------------
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+model Coupon {
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  code          String       @unique
+  discountType  DiscountType
+  discountValue Float
+  minOrderValue Float        @default(0) // Optional minimum cart value
+  expiresAt     DateTime?
+  isActive      Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+// Order model updates
+// Note: Manually added fields to the existing Order model in the schema below or rely on the user to check the Order model definition.
+// Wait, I must edit the Order model definition earlier in the file, not append it here.
+// I will use multi_replace for this to do it in one go.

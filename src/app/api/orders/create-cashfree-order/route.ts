@@ -16,7 +16,7 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json();
-        const { amount, customerPhone } = body;
+        const { amount, customerPhone, couponCode } = body;
 
         if (!amount) {
             return new NextResponse("Amount is required", { status: 400 });
@@ -42,7 +42,10 @@ export async function POST(request: Request) {
                 customer_email: session.user.email || "customer@example.com",
             },
             order_meta: {
-                return_url: `${returnUrl}/order-success?orderId=${orderId}`,
+                return_url: `${returnUrl}/order-success?orderId=${orderId}&couponCode=${couponCode || ""}`,
+            },
+            order_tags: {
+                coupon_code: couponCode || "NONE"
             }
         };
 
