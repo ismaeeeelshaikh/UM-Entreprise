@@ -8,9 +8,22 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { format } from "date-fns";
-import { Check, Truck, Package, MapPin, ShoppingBag, AlertTriangle } from "lucide-react";
+import { format, addDays } from "date-fns";
+import { Check, Truck, Package, MapPin, ShoppingBag, AlertTriangle, Calendar } from "lucide-react";
 // ... imports
+
+// Helper for delivery date
+const getExpectedDeliveryDate = (dateString: string, paymentMethod: string) => {
+  const date = new Date(dateString);
+  const isCOD = paymentMethod === "COD";
+  const startDays = isCOD ? 7 : 4;
+  const endDays = isCOD ? 10 : 5;
+
+  const start = addDays(date, startDays);
+  const end = addDays(date, endDays);
+
+  return `${format(start, "MMM d")} - ${format(end, "MMM d")}`;
+};
 
 interface OrderDetail {
   id: string;
@@ -31,6 +44,10 @@ interface OrderDetail {
       name: string;
       description: string;
       images: string[];
+      variants?: {
+        color: string;
+        images: string[];
+      }[];
     };
   }[];
 }
@@ -41,6 +58,19 @@ const ORDER_STEPS = [
   { label: "Out for delivery", status: ["OUT_FOR_DELIVERY"], icon: Truck },
   { label: "Delivered", status: ["DELIVERED"], icon: MapPin },
 ] as const;
+
+const getProductImage = (item: OrderDetail["items"][0]) => {
+  if (item.selectedColor && item.product.variants) {
+    const variant = item.product.variants.find((v) => v.color === item.selectedColor);
+    if (variant && variant.images && variant.images.length > 0) {
+      return variant.images[0];
+    }
+  }
+  if (item.product.images && item.product.images.length > 0) {
+    return item.product.images[0];
+  }
+  return "/placeholder.png";
+};
 
 export default function OrderDetailPage() {
   const params = useParams();
@@ -204,7 +234,7 @@ export default function OrderDetailPage() {
                 <div key={item.id} className="flex gap-4">
                   <div className="relative h-20 w-20 overflow-hidden rounded-lg">
                     <Image
-                      src={item.product.images[0]}
+                      src={getProductImage(item)}
                       alt={item.product.name}
                       fill
                       className="object-cover"
@@ -275,6 +305,16 @@ export default function OrderDetailPage() {
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Payment Method</span>
                 <span>{order.paymentMethod === 'COD' ? 'Cash on Delivery' : 'Online'}</span>
+              </div>
+
+              {/* Expected Delivery */}
+              <div className="flex justify-between items-center bg-blue-50 p-2 rounded-md border border-blue-100 mt-2">
+                <span className="text-blue-700 flex items-center gap-2 text-sm">
+                  <Calendar className="w-4 h-4" /> Expected Delivery
+                </span>
+                <span className="font-semibold text-blue-900 text-sm">
+                  {getExpectedDeliveryDate(order.createdAt, order.paymentMethod)}
+                </span>
               </div>
               <Separator />
               <div className="flex justify-between font-bold">

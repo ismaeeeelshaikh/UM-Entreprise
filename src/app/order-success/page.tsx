@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Check, ShoppingBag, ArrowRight } from "lucide-react";
+import { Check, ShoppingBag, ArrowRight, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Suspense } from "react";
 import { useCart } from "@/store/useCart";
+import { format, addDays } from "date-fns";
 
 function OrderSuccessContent() {
     const searchParams = useSearchParams();
@@ -17,9 +17,23 @@ function OrderSuccessContent() {
     const { clearCart } = useCart();
     const [verifying, setVerifying] = useState(false);
     const [error, setError] = useState("");
+    const [orderData, setOrderData] = useState<any>(null);
 
     useEffect(() => {
         if (!orderId) return;
+
+        // Fetch basics (Payment Method & CreatedAt) to show delivery estimate
+        const fetchOrderInfo = async () => {
+            try {
+                const res = await fetch(`/api/orders/${orderId}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setOrderData(data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch order info", error);
+            }
+        };
 
         const verifyPayment = async () => {
             const pendingOrderStr = localStorage.getItem("pendingOrder");
@@ -57,7 +71,21 @@ function OrderSuccessContent() {
         };
 
         verifyPayment();
+        fetchOrderInfo();
     }, [orderId, clearCart]);
+
+    // Helper for delivery date
+    const getExpectedDelivery = () => {
+        if (!orderData) return null;
+        const date = new Date(orderData.createdAt);
+        const isCOD = orderData.paymentMethod === "COD";
+        const startDays = isCOD ? 7 : 4;
+        const endDays = isCOD ? 10 : 5;
+
+        const start = addDays(date, startDays);
+        const end = addDays(date, endDays);
+        return `${format(start, "MMM d")} - ${format(end, "MMM d")}`;
+    };
 
     if (verifying) {
         return (
@@ -124,22 +152,37 @@ function OrderSuccessContent() {
                                 transition={{ delay: 0.5 }}
                                 className="text-muted-foreground"
                             >
-                                Thank you for your purchase. We've received your order and will begin processing it right away.
+                                Thank you for your purchase. We&apos;ve received your order and will begin processing it right away.
                             </motion.p>
                         </div>
 
                         {/* Order ID Badge */}
                         {orderId && (
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ delay: 0.6 }}
-                                className="bg-slate-100 px-4 py-2 rounded-lg border border-slate-200"
-                            >
-                                <p className="text-sm font-medium text-slate-600">
-                                    Order ID: <span className="text-slate-900 font-bold">#{orderId.slice(-8)}</span>
-                                </p>
-                            </motion.div>
+                            <div className="flex flex-col gap-2 items-center w-full">
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: 0.6 }}
+                                    className="bg-slate-100 px-4 py-2 rounded-lg border border-slate-200"
+                                >
+                                    <p className="text-sm font-medium text-slate-600">
+                                        Order ID: <span className="text-slate-900 font-bold">#{orderId.slice(-8)}</span>
+                                    </p>
+                                </motion.div>
+
+                                {/* Expected Delivery Badge */}
+                                {orderData && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 5 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.7 }}
+                                        className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100"
+                                    >
+                                        <Calendar className="w-4 h-4" />
+                                        <span>Estimated Delivery: <b>{getExpectedDelivery()}</b></span>
+                                    </motion.div>
+                                )}
+                            </div>
                         )}
 
                         {/* Action Buttons */}

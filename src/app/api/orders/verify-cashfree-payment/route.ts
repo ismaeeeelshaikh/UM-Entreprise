@@ -133,6 +133,18 @@ export async function POST(request: Request) {
         // Send Order Notification Email
         try {
             await sendOrderNotification(order, session.user.email || "Unknown Customer");
+
+            // ✅ Send Telegram Notification
+            const telegramMessage = `
+<b>🎉 New Online Order Received!</b>
+<b>Order ID:</b> #${order.id.slice(-6)}
+<b>Amount:</b> ₹${order.totalAmount}
+<b>Customer:</b> ${shippingAddress.fullName}
+<b>Payment:</b> ONLINE (Cashfree)
+<b>Status:</b> ${successfulTransaction.payment_status}
+            `;
+            await import("@/lib/telegram").then(mod => mod.sendTelegramNotification(telegramMessage));
+
         } catch (emailError) {
             console.error("Failed to send order notification:", emailError);
         }

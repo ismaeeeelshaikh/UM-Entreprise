@@ -29,7 +29,8 @@ import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useCart } from "@/store/useCart";
 import { useToast } from "@/components/ui/use-toast";
-import { Plus, MapPin, Pencil, Trash2, CheckCircle2 } from "lucide-react";
+import { Plus, MapPin, Pencil, Trash2, CheckCircle2, Truck } from "lucide-react";
+import { addDays, format } from "date-fns";
 
 const indianStates = [
   "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
@@ -356,7 +357,7 @@ export default function CheckoutPage() {
 
   if (items.length === 0) {
     return (
-      <div className="container flex min-h-[60vh] flex-col items-center justify-center py-20">
+      <div className="container flex min-h-[60vh] flex-col items-center justify-center py-20 px-4 md:px-6">
         <h1 className="mb-4 text-3xl font-bold">Your cart is empty</h1>
         <p className="mb-8 text-muted-foreground">
           Add some products to checkout
@@ -369,7 +370,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="container py-10">
+    <div className="container py-10 px-4 md:px-6">
       <h1 className="mb-8 text-3xl font-bold">Checkout</h1>
 
       <div className="grid gap-8 lg:grid-cols-3">
@@ -667,6 +668,22 @@ export default function CheckoutPage() {
           </Card>
 
           {/* Main Action Button */}
+          {/* Delivery Estimate Banner */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center gap-3 text-blue-800 mb-6">
+            <Truck className="h-5 w-5 text-blue-600" />
+            <div>
+              <p className="font-semibold text-sm">
+                Estimated Delivery: {paymentMethod === "COD" ? "7-10 Days" : "4-5 Days"}
+              </p>
+              <p className="text-xs text-blue-600">
+                {paymentMethod === "COD"
+                  ? `${format(addDays(new Date(), 7), "MMM d")} - ${format(addDays(new Date(), 10), "MMM d")}`
+                  : `${format(addDays(new Date(), 4), "MMM d")} - ${format(addDays(new Date(), 5), "MMM d")}`
+                }
+              </p>
+            </div>
+          </div>
+
           {(!isAddingNew && !isEditingId && savedAddresses.length > 0) ? (
             <Button
               onClick={form.handleSubmit(onFormSubmit)}

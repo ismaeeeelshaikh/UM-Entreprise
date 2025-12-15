@@ -40,9 +40,26 @@ interface OrderDetail {
       name: string;
       description: string;
       images: string[];
+      variants?: {
+        color: string;
+        images: string[];
+      }[];
     };
   }[];
 }
+
+const getProductImage = (item: OrderDetail["items"][0]) => {
+  if (item.selectedColor && item.product.variants) {
+    const variant = item.product.variants.find((v) => v.color === item.selectedColor);
+    if (variant && variant.images && variant.images.length > 0) {
+      return variant.images[0];
+    }
+  }
+  if (item.product.images && item.product.images.length > 0) {
+    return item.product.images[0];
+  }
+  return "/placeholder.png";
+};
 
 export default function AdminOrderDetailPage() {
   const params = useParams();
@@ -141,7 +158,7 @@ export default function AdminOrderDetailPage() {
                 <div key={item.id} className="flex gap-4">
                   <div className="relative h-20 w-20 overflow-hidden rounded-lg">
                     <Image
-                      src={item.product.images[0]}
+                      src={getProductImage(item)}
                       alt={item.product.name}
                       fill
                       className="object-cover"

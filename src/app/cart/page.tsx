@@ -15,7 +15,7 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="container py-20">
+      <div className="container py-20 px-4 md:px-6">
         <EmptyState
           title="Your cart is empty"
           description="Add some products to get started with your order"
@@ -28,7 +28,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className="container py-10">
+    <div className="container py-10 px-4 md:px-6">
       <h1 className="mb-8 text-3xl font-bold">Shopping Cart</h1>
 
       <div className="grid gap-8 lg:grid-cols-3">

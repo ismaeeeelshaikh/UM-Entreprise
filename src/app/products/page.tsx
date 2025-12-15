@@ -1,12 +1,6 @@
 import prisma from "@/lib/prisma";
 import ProductCard from "@/components/ProductCard";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import ProductFilter from "@/components/ProductFilter";
 import { Prisma } from "@prisma/client";
 
 async function getProducts(category?: string, search?: string) {
@@ -46,7 +40,7 @@ export default async function ProductsPage({
   const products = await getProducts(category, search);
 
   return (
-    <div className="container py-10">
+    <div className="container py-10 px-4 md:px-6">
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Products</h1>
@@ -57,22 +51,7 @@ export default async function ProductsPage({
       </div>
 
       {/* Category Filter */}
-      <div className="mb-6">
-        <Select defaultValue={category || "ALL"}>
-          <SelectTrigger className="w-[200px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ALL">All Products</SelectItem>
-            <SelectItem value="WALLET">Wallets</SelectItem>
-            <SelectItem value="PEN">Pens</SelectItem>
-            <SelectItem value="KEYCHAIN">Keychains</SelectItem>
-            <SelectItem value="RING">Rings</SelectItem>
-            <SelectItem value="BANGLE">Bangles</SelectItem>
-            <SelectItem value="OTHER">Other</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <ProductFilter initialCategory={category} />
 
       {/* Products Grid */}
       {products.length === 0 ? (
@@ -84,7 +63,7 @@ export default async function ProductsPage({
           </div>
         </div>
       ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {products.map((product: any) => (
             <ProductCard
               key={product.id}

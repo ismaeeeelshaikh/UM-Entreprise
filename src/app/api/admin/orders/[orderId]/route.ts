@@ -69,6 +69,7 @@ export async function GET(
                 name: true,
                 description: true,
                 images: true,
+                variants: true, // ✅ Include variants
               },
             },
           },

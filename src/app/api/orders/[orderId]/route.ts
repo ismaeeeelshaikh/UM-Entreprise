@@ -29,6 +29,7 @@ export async function GET(
                 name: true,
                 description: true,
                 images: true,
+                variants: true, // ✅ Include variants to get variant-specific images
               },
             },
           },
@@ -139,6 +140,21 @@ export async function PATCH(
       order.totalAmount,
       order.paymentMethod
     );
+
+    // ✅ Send Telegram Notification for Cancellation
+    const { sendTelegramNotification } = await import("@/lib/telegram");
+    const cancellationMessage = `
+<b>❌ Order Cancelled</b>
+
+<b>Order ID:</b> #${orderId.slice(-8)}
+<b>Customer:</b> ${session.user.name || session.user.email}
+<b>Amount:</b> ₹${order.totalAmount}
+<b>Payment Method:</b> ${order.paymentMethod}
+<b>Refund Status:</b> ${order.paymentMethod === "ONLINE" ? "Initiated" : "N/A"}
+
+<i>Customer initiated cancellation via website.</i>
+    `;
+    await sendTelegramNotification(cancellationMessage);
 
     return NextResponse.json(updatedOrder);
   } catch (error: any) {
