@@ -12,7 +12,35 @@ import { format } from "date-fns";
 import { Check, Truck, Package, MapPin, ShoppingBag, AlertTriangle } from "lucide-react";
 // ... imports
 
-// ... existing interfaces
+interface OrderDetail {
+  id: string;
+  totalAmount: number;
+  status: string;
+  paymentStatus: string;
+  paymentMethod: string;
+  paymentId: string;
+  shippingAddress: string;
+  createdAt: string;
+  items: {
+    id: string;
+    quantity: number;
+    priceAtPurchase: number;
+    customizationText: string | null;
+    selectedColor: string | null;
+    product: {
+      name: string;
+      description: string;
+      images: string[];
+    };
+  }[];
+}
+
+const ORDER_STEPS = [
+  { label: "Ordered", status: ["PENDING", "PROCESSING"], icon: ShoppingBag },
+  { label: "Shipped", status: ["SHIPPED"], icon: Package },
+  { label: "Out for delivery", status: ["OUT_FOR_DELIVERY"], icon: Truck },
+  { label: "Delivered", status: ["DELIVERED"], icon: MapPin },
+] as const;
 
 export default function OrderDetailPage() {
   const params = useParams();
@@ -22,9 +50,23 @@ export default function OrderDetailPage() {
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false); // New state
 
-  // ... useEffect
+  useEffect(() => {
+    fetchOrderDetails();
+  }, [orderId]);
 
-  // ... fetchOrderDetails logic
+  const fetchOrderDetails = async () => {
+    try {
+      const response = await fetch(`/api/orders/${orderId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setOrder(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch order", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleCancelOrder = async () => {
     if (!confirm("Are you sure you want to cancel this order? refunds for Online payments will be initiated immediately.")) return;
@@ -51,9 +93,34 @@ export default function OrderDetailPage() {
     }
   };
 
-  // ... getStepStatus helper
+  const getStepStatus = (stepIndex: number, currentStatus: string) => {
+    // Defines the hierarchy of statuses
+    const statusHierarchy = ["PENDING", "PROCESSING", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED"];
 
-  // ... getCurrentStepIndex helper
+    // Normalize status to handle the 'Ordered' group
+    let currentLevel = statusHierarchy.indexOf(currentStatus);
+    if (currentStatus === "PENDING") currentLevel = 1; // Both count as Ordered level for this checks
+    if (currentStatus === "PROCESSING") currentLevel = 1;
+    if (currentStatus === "CANCELED") return "canceled";
+
+    // Map step index to required hierarchy level
+    // 0: Ordered (PENDING/PROCESSING) -> level 1
+    // 1: Shipped (SHIPPED) -> level 2
+    // 2: Out (OUT_FOR_DELIVERY) -> level 3
+    // 3: Delivered (DELIVERED) -> level 4
+    const stepLevel = stepIndex + 1;
+
+    if (currentLevel >= stepLevel) return "completed";
+    if (currentLevel === stepLevel - 1 && currentStatus !== "DELIVERED") return "current"; // Only if we assume linear progression
+    return "upcoming";
+  };
+
+  const getCurrentStepIndex = (status: string) => {
+    if (status === "DELIVERED") return 3;
+    if (status === "OUT_FOR_DELIVERY") return 2;
+    if (status === "SHIPPED") return 1;
+    return 0; // PENDING or PROCESSING
+  };
 
   // ... loading and error states
 
