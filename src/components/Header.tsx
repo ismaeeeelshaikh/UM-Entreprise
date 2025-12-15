@@ -149,7 +149,7 @@ export default function Header() {
             exit={{ opacity: 0, height: 0 }}
             className="md:hidden border-b bg-background"
           >
-            <div className="container flex flex-col gap-4 py-4 pb-6">
+            <div className="container flex flex-col gap-4 py-4 pb-6 px-6">
               <Link
                 href="/"
                 className="text-lg font-medium transition-colors hover:text-primary"

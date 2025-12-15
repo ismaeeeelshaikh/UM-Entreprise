@@ -1,6 +1,5 @@
 import prisma from "@/lib/prisma";
 import ProductCard from "@/components/ProductCard";
-import ProductFilter from "@/components/ProductFilter";
 import { Prisma } from "@prisma/client";
 
 async function getProducts(category?: string, search?: string) {
@@ -49,9 +48,6 @@ export default async function ProductsPage({
           </p>
         </div>
       </div>
-
-      {/* Category Filter */}
-      <ProductFilter initialCategory={category} />
 
       {/* Products Grid */}
       {products.length === 0 ? (
