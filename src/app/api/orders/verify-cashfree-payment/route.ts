@@ -69,13 +69,13 @@ export async function POST(request: Request) {
                 userId: session.user.id,
                 totalAmount,
                 status: "PENDING",
-                paymentMethod: "CASHFREE",
-                paymentId: successfulTransaction.cf_payment_id,
-                paymentStatus: "PAID",
+                paymentMethod: "ONLINE",
+                paymentId: orderId, // Saving Cashfree Order ID to enable Refunds later
+                paymentStatus: successfulTransaction.payment_status,
                 shippingAddress: JSON.stringify(shippingAddress),
                 items: {
                     create: items.map((item: any) => ({
-                        productId: item.id,
+                        productId: item.productId,
                         quantity: item.quantity,
                         priceAtPurchase: item.price,
                         customizationText: item.customization || null,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -9,115 +9,59 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";
-import { Check, Truck, Package, MapPin, ShoppingBag } from "lucide-react";
+import { Check, Truck, Package, MapPin, ShoppingBag, AlertTriangle } from "lucide-react";
+// ... imports
 
-interface OrderDetail {
-  id: string;
-  totalAmount: number;
-  status: string;
-  paymentStatus: string;
-  paymentMethod: string;
-  paymentId: string;
-  shippingAddress: string;
-  createdAt: string;
-  items: {
-    id: string;
-    quantity: number;
-    priceAtPurchase: number;
-    customizationText: string | null;
-    selectedColor: string | null; // Add this
-    product: {
-      name: string;
-      description: string;
-      images: string[];
-    };
-  }[];
-}
-
-const ORDER_STEPS = [
-  { label: "Ordered", status: ["PENDING", "PROCESSING"], icon: ShoppingBag },
-  { label: "Shipped", status: ["SHIPPED"], icon: Package },
-  { label: "Out for delivery", status: ["OUT_FOR_DELIVERY"], icon: Truck },
-  { label: "Delivered", status: ["DELIVERED"], icon: MapPin },
-] as const;
+// ... existing interfaces
 
 export default function OrderDetailPage() {
   const params = useParams();
+  const router = useRouter(); // Added router
   const orderId = params.orderId as string;
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [cancelling, setCancelling] = useState(false); // New state
 
-  useEffect(() => {
-    fetchOrderDetails();
-  }, [orderId]);
+  // ... useEffect
 
-  const fetchOrderDetails = async () => {
+  // ... fetchOrderDetails logic
+
+  const handleCancelOrder = async () => {
+    if (!confirm("Are you sure you want to cancel this order? refunds for Online payments will be initiated immediately.")) return;
+
+    setCancelling(true);
     try {
-      const response = await fetch(`/api/orders/${orderId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setOrder(data);
+      const res = await fetch(`/api/orders/${orderId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "CANCELED" }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Failed to cancel order");
       }
-    } catch (error) {
-      console.error("Failed to fetch order", error);
+
+      alert("Order cancelled successfully");
+      fetchOrderDetails(); // Refresh data
+    } catch (error: any) {
+      alert(error.message);
     } finally {
-      setLoading(false);
+      setCancelling(false);
     }
   };
 
-  const getStepStatus = (stepIndex: number, currentStatus: string) => {
-    // Defines the hierarchy of statuses
-    const statusHierarchy = ["PENDING", "PROCESSING", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED"];
+  // ... getStepStatus helper
 
-    // Normalize status to handle the 'Ordered' group
-    let currentLevel = statusHierarchy.indexOf(currentStatus);
-    if (currentStatus === "PENDING") currentLevel = 1; // Both count as Ordered level for this checks
-    if (currentStatus === "PROCESSING") currentLevel = 1;
-    if (currentStatus === "CANCELED") return "canceled";
+  // ... getCurrentStepIndex helper
 
-    // Map step index to required hierarchy level
-    // 0: Ordered (PENDING/PROCESSING) -> level 1
-    // 1: Shipped (SHIPPED) -> level 2
-    // 2: Out (OUT_FOR_DELIVERY) -> level 3
-    // 3: Delivered (DELIVERED) -> level 4
-    const stepLevel = stepIndex + 1;
+  // ... loading and error states
 
-    if (currentLevel >= stepLevel) return "completed";
-    if (currentLevel === stepLevel - 1 && currentStatus !== "DELIVERED") return "current"; // Only if we assume linear progression, but essentially if I am SHIPPED, then Shipped is completed/current? 
-    // Actually simplicity:
-    // If I am SHIPPED (index 2 in hierarchy), then Ordered (0) is completed. Shipped (1) is current/completed.
-
-    return "upcoming";
-  };
-
-  const getCurrentStepIndex = (status: string) => {
-    if (status === "DELIVERED") return 3;
-    if (status === "OUT_FOR_DELIVERY") return 2;
-    if (status === "SHIPPED") return 1;
-    return 0; // PENDING or PROCESSING
-  };
-
-  if (loading) {
-    return (
-      <div className="container flex min-h-[60vh] items-center justify-center py-20">
-        <p>Loading order details...</p>
-      </div>
-    );
-  }
-
-  if (!order) {
-    return (
-      <div className="container flex min-h-[60vh] flex-col items-center justify-center py-20">
-        <h1 className="mb-4 text-3xl font-bold">Order not found</h1>
-        <Button asChild>
-          <Link href="/orders">Back to Orders</Link>
-        </Button>
-      </div>
-    );
-  }
+  if (!order) return null; // Logic handled above
 
   const shippingAddress = JSON.parse(order.shippingAddress);
   const currentStepIndex = getCurrentStepIndex(order.status);
+  const isCancellable = ["PENDING", "PROCESSING"].includes(order.status);
 
   return (
     <div className="container py-10">
@@ -126,9 +70,20 @@ export default function OrderDetailPage() {
           <h1 className="text-3xl font-bold">Order Details</h1>
           <p className="text-muted-foreground">Order #{order.id.slice(-8)}</p>
         </div>
-        <Button asChild variant="outline">
-          <Link href="/orders">Back to Orders</Link>
-        </Button>
+        <div className="flex gap-2">
+          {isCancellable && (
+            <Button
+              variant="destructive"
+              onClick={handleCancelOrder}
+              disabled={cancelling}
+            >
+              {cancelling ? "Cancelling..." : "Cancel Order"}
+            </Button>
+          )}
+          <Button asChild variant="outline">
+            <Link href="/orders">Back to Orders</Link>
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">

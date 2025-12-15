@@ -106,3 +106,33 @@ export const sendContactFormNotification = async (data: { name: string; email: s
     throw new Error("Failed to send email");
   }
 };
+export const sendCancellationNotification = async (orderId: string, userEmail: string, refundAmount: number, paymentMethod: string) => {
+  const subject = `Order Cancelled: #${orderId.slice(-6)}`;
+
+  const html = `
+    <div style="font-family: sans-serif; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+      <h2 style="color: #ef4444;">Order Cancelled ❌</h2>
+      <p><strong>Order ID:</strong> #${orderId}</p>
+      <p><strong>Customer:</strong> ${userEmail}</p>
+      <p><strong>Refund Amount:</strong> ₹${refundAmount}</p>
+      <p><strong>Payment Method:</strong> ${paymentMethod}</p>
+      <p><strong>Status:</strong> ${paymentMethod === "ONLINE" ? "Refund Initiated (Cashfree)" : "Order Voided (COD)"}</p>
+
+      <div style="margin-top: 24px;">
+        <a href="${process.env.NEXTAUTH_URL}/admin/orders" style="background-color: #3b82f6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">View Orders</a>
+      </div>
+    </div>
+  `;
+
+  try {
+    await transporter.sendMail({
+      from: process.env.EMAIL_SERVER_USER,
+      to: process.env.EMAIL_SERVER_USER, // Send to Admin
+      subject,
+      html,
+    });
+    console.log("Cancellation email sent successfully");
+  } catch (error) {
+    console.error("Failed to send cancellation email:", error);
+  }
+};
