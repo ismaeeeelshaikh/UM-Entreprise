@@ -26,6 +26,7 @@ interface OrderDetail {
   };
   totalAmount: number;
   status: string;
+  paymentMethod: string; // ✅ Added
   paymentStatus: string;
   paymentId: string;
   shippingAddress: string;
@@ -208,9 +209,10 @@ export default function AdminOrderDetailPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="PENDING">Pending</SelectItem>
-                    <SelectItem value="PROCESSING">Processing</SelectItem>
+                    <SelectItem value="PENDING">Pending Payment</SelectItem>
+                    <SelectItem value="PROCESSING">Ordered</SelectItem>
                     <SelectItem value="SHIPPED">Shipped</SelectItem>
+                    <SelectItem value="OUT_FOR_DELIVERY">Out for Delivery</SelectItem>
                     <SelectItem value="DELIVERED">Delivered</SelectItem>
                     <SelectItem value="CANCELED">Canceled</SelectItem>
                   </SelectContent>
@@ -219,7 +221,11 @@ export default function AdminOrderDetailPage() {
               <Separator />
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Payment</span>
+                  <span className="text-muted-foreground">Method</span>
+                  <Badge variant="secondary">{order.paymentMethod}</Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Payment Status</span>
                   <Badge variant="outline">{order.paymentStatus}</Badge>
                 </div>
                 <div className="flex justify-between">

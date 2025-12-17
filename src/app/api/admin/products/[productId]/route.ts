@@ -5,7 +5,7 @@ import prisma from "@/lib/prisma";
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ productId: string }> } // ✅ Changed to Promise
+  { params }: { params: Promise<{ productId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -14,7 +14,6 @@ export async function PATCH(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    // ✅ Await params first
     const { productId } = await params;
 
     const body = await request.json();
@@ -87,7 +86,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ productId: string }> } // ✅ Changed to Promise
+  { params }: { params: Promise<{ productId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -96,7 +95,6 @@ export async function DELETE(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    // ✅ Await params first
     const { productId } = await params;
 
     // Delete associated OrderItems first to avoid foreign key constraints
@@ -104,6 +102,11 @@ export async function DELETE(
       where: {
         productId: productId,
       },
+    });
+
+    // Delete associated Reviews (because Review model lacks onDelete: Cascade)
+    await prisma.review.deleteMany({
+      where: { productId: productId },
     });
 
     await prisma.product.delete({

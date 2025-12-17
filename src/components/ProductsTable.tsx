@@ -81,7 +81,11 @@ export default function ProductsTable({ products }: ProductsTableProps) {
               <Badge variant="outline" className="whitespace-normal text-center h-auto py-1">{product.category}</Badge>
             </TableCell>
             <TableCell>₹{(product.price > 0 ? product.price : (product.variants?.[0]?.price || 0)).toFixed(2)}</TableCell>
-            <TableCell>{product.stock}</TableCell>
+            <TableCell>
+              {product.variants?.length > 0
+                ? product.variants.reduce((acc: number, v: any) => acc + (v.stock || 0), 0)
+                : product.stock}
+            </TableCell>
             <TableCell className="space-x-2">
               <Button asChild variant="outline" size="sm">
                 <Link href={`/admin/products/${product.id}`}>Edit</Link>

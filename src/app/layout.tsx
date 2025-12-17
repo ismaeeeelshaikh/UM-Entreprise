@@ -4,9 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/Providers";
 import { Toaster } from "@/components/ui/toaster";
-import SessionProvider from "@/components/SessionProvider";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import ClientWrapper from "@/components/ClientWrapper";
 import Script from "next/script";
 import WhatsAppButton from "@/components/WhatsAppButton";
 
@@ -17,7 +15,6 @@ export const metadata: Metadata = {
   description: "Shop custom-engraved wallets, pens, keychains, and more.",
 };
 
-// Inside default function RootLayout
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -31,23 +28,17 @@ export default function RootLayout({
           inter.variable
         )}
       >
-        <SessionProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <div className="relative flex min-h-screen flex-col">
-              <Header />
-              <main className="flex-1">{children}</main>
-              <Footer />
-            </div>
-            <Toaster />
-            <WhatsAppButton />
-          </ThemeProvider>
-        </SessionProvider>
-        {/* ✅ Add Razorpay script */}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <ClientWrapper>{children}</ClientWrapper>
+          <Toaster />
+          <WhatsAppButton />
+        </ThemeProvider>
+        {/* ✅ Add Razorpay script - Updated */}
         <Script
           id="razorpay-checkout-js"
           src="https://checkout.razorpay.com/v1/checkout.js"

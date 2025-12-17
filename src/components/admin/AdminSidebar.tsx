@@ -23,8 +23,10 @@ export function AdminSidebar() {
     return (
         <>
             {/* Mobile Trigger */}
-            <div className="md:hidden border-b p-4 flex items-center justify-between bg-white w-full">
-                <h2 className="text-lg font-semibold">Admin Panel</h2>
+            <div className="md:hidden sticky top-0 z-30 border-b p-4 flex items-center justify-between bg-white w-full">
+                <Link href="/admin">
+                    <h2 className="text-lg font-semibold">Admin Panel</h2>
+                </Link>
                 <Button variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)}>
                     {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
                 </Button>
@@ -41,12 +43,14 @@ export function AdminSidebar() {
             {/* Sidebar Container */}
             <aside className={cn(
                 "bg-muted/40 border-r transition-transform duration-300 ease-in-out z-50",
-                "fixed inset-y-0 left-0 w-64 md:relative md:translate-x-0",
+                "fixed inset-y-0 left-0 w-64 md:sticky md:top-0 md:h-screen md:translate-x-0",
                 isOpen ? "translate-x-0" : "-translate-x-full"
             )}>
                 <div className="flex h-full max-h-screen flex-col bg-white md:bg-transparent">
                     <div className="hidden md:flex h-16 items-center border-b px-6">
-                        <h2 className="text-lg font-semibold">Admin Panel</h2>
+                        <Link href="/admin">
+                            <h2 className="text-lg font-semibold">Admin Panel</h2>
+                        </Link>
                     </div>
 
                     <div className="flex-1 overflow-auto py-2">
