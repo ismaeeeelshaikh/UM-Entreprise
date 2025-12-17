@@ -14,32 +14,55 @@ interface Product {
     isCustomizable: boolean;
     variants: any[];
     reviews: { rating: number }[];
+    createdAt: string;
 }
 
 interface SimilarProductsProps {
     currentProductId: string;
+    currentProductName: string;
     category: string;
 }
 
-export default function SimilarProducts({ currentProductId, category }: SimilarProductsProps) {
+export default function SimilarProducts({ currentProductId, currentProductName, category }: SimilarProductsProps) {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         async function fetchProducts() {
             try {
-                // Fetch all products in the category
-                const res = await fetch(`/api/products?category=${encodeURIComponent(category)}`);
+                // Fetch latest 50 products to find similar items across categories (handles category typos)
+                const res = await fetch(`/api/products?limit=50&t=${Date.now()}`, {
+                    cache: 'no-store'
+                });
                 if (!res.ok) throw new Error("Failed to fetch");
 
                 const data: Product[] = await res.json();
 
-                // Filter out the current product and limit to 4-5 items
-                const filtered = data
-                    .filter((p) => p.id !== currentProductId)
-                    .slice(0, 5);
+                // Calculate similarity score
+                const calculateSimilarity = (prodName: string, targetName: string) => {
+                    const targetWords = targetName.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+                    const prodWords = prodName.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+                    const intersection = targetWords.filter(word => prodWords.includes(word));
+                    return intersection.length;
+                };
 
-                setProducts(filtered);
+                const processedProducts = data
+                    .filter((p) => p.id !== currentProductId) // Remove current product
+                    .map(p => ({
+                        ...p,
+                        similarityScore: calculateSimilarity(p.name, currentProductName)
+                    }))
+                    .sort((a, b) => {
+                        // Sort by similarity score (descending)
+                        if (b.similarityScore !== a.similarityScore) {
+                            return b.similarityScore - a.similarityScore;
+                        }
+                        // Then by creation date (newest first)
+                        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                    })
+                    .slice(0, 5); // Take top 5
+
+                setProducts(processedProducts);
             } catch (error) {
                 console.error(error);
             } finally {
@@ -52,7 +75,7 @@ export default function SimilarProducts({ currentProductId, category }: SimilarP
         } else {
             setLoading(false);
         }
-    }, [category, currentProductId]);
+    }, [category, currentProductId, currentProductName]);
 
     if (loading) return null;
 

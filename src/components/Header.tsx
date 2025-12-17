@@ -80,7 +80,7 @@ export default function Header() {
           <div className="hidden md:block">
             <SearchBar />
           </div>
-          <Button variant="ghost" size="icon" asChild className="hidden md:flex">
+          <Button variant="ghost" size="icon" asChild>
             <Link href="/wishlist">
               <Heart className="h-5 w-5" />
               <span className="sr-only">Wishlist</span>

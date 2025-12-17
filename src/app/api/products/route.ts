@@ -14,8 +14,11 @@ export async function GET(request: Request) {
       whereClause.category = category as any;
     }
 
+    const limit = searchParams.get("limit");
+
     const products = await prisma.product.findMany({
       where: whereClause,
+      take: limit ? parseInt(limit) : undefined,
       orderBy: {
         createdAt: "desc",
       },

@@ -46,6 +46,11 @@ export default function TermsPage() {
                     <p>
                         If you have any questions about these Terms, please contact us.
                     </p>
+                    <div className="mt-4 space-y-2">
+                        <p><strong>Name:</strong> Mohammed Umar Mohammed Manzar Shaikh</p>
+                        <p><strong>Email:</strong> <a href="mailto:entrepriseum@gmail.com" className="text-primary hover:underline">entrepriseum@gmail.com</a></p>
+                        <p><strong>Phone:</strong> <a href="tel:+918424813572" className="text-primary hover:underline">+91 8424813572</a></p>
+                    </div>
                 </section>
             </div>
         </div>

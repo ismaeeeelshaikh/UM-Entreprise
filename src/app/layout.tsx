@@ -8,6 +8,7 @@ import SessionProvider from "@/components/SessionProvider";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Script from "next/script";
+import WhatsAppButton from "@/components/WhatsAppButton";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -43,6 +44,7 @@ export default function RootLayout({
               <Footer />
             </div>
             <Toaster />
+            <WhatsAppButton />
           </ThemeProvider>
         </SessionProvider>
         {/* ✅ Add Razorpay script */}

@@ -17,8 +17,8 @@ export default function ShippingPolicyPage() {
                         Shipping charges for your order will be calculated and displayed at checkout.
                     </p>
                     <ul className="list-disc pl-6 mt-2 space-y-2">
-                        <li><strong>Standard Shipping:</strong> 5-7 business days</li>
-                        <li><strong>Express Shipping:</strong> 2-3 business days (if available)</li>
+                        <li><strong>Standard Delivery:</strong> 5-7 business days</li>
+                        <li><strong>Express Delivery:</strong> 2-3 business days (if available)</li>
                     </ul>
                     <p className="mt-2">
                         Delivery delays can occasionally occur.
