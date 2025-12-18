@@ -32,7 +32,7 @@ export default function Footer() {
             <h4 className="font-semibold text-white">Shop</h4>
             <ul className="space-y-2 text-sm text-gray-400">
               <li><Link href="/products" className="hover:text-white transition-colors">All Products</Link></li>
-              <li><Link href="/products?category=Corporate" className="hover:text-white transition-colors">Corporate Gifts</Link></li>
+              <li><Link href="/customize" className="hover:text-white transition-colors">Corporate Gifts</Link></li>
               <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
               <li><Link href="/profile" className="hover:text-white transition-colors">My Account</Link></li>
             </ul>
@@ -44,7 +44,7 @@ export default function Footer() {
             <ul className="space-y-2 text-sm text-gray-400">
               <li><Link href="/contact" className="hover:text-white transition-colors">Contact Us</Link></li>
               <li><Link href="/shipping-policy" className="hover:text-white transition-colors">Shipping Policy</Link></li>
-              <li><Link href="/returns" className="hover:text-white transition-colors">Returns & Refunds</Link></li>
+              <li><Link href="/refund-policy" className="hover:text-white transition-colors">Returns & Refunds</Link></li>
               <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
             </ul>
           </div>

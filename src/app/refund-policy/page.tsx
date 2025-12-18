@@ -21,7 +21,7 @@ export default function RefundPolicyPage() {
                 <section>
                     <h2 className="mb-4 text-xl font-semibold text-foreground">3. Defective or Damaged Items</h2>
                     <p>
-                        If you receive a defective or damaged item, please contact us within 48 hours of delivery with photographic evidence. Upon verification, we will offer a free replacement or a full refund to your original payment method. Replacement or exchanged products will be delivered within 4-5 days.
+                        If you receive a defective or damaged item, you must contact us within 48 hours of delivery with photographic evidence. Upon verification, we will offer a free replacement or a full refund to your original payment method. Replacement or exchanged products will be delivered within 4-5 days.
                     </p>
                 </section>
 
